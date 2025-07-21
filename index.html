@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Model Viewer</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: sans-serif;
+            background-color: #1a1a1a;
+            color: #fff;
+        }
+        #app {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        #viewer {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        #material-editor {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+        }
+        .material-item {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #555;
+            padding-bottom: 15px;
+        }
+        .material-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        h3 {
+            margin-top: 0;
+            font-size: 1.1em;
+            color: #00aaff;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        input[type="color"], input[type="range"] {
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <canvas id="viewer"></canvas>
+        <div id="material-editor" style="display: none;">
+            <h2>Material Properties</h2>
+            <div id="material-properties"></div>
+        </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
