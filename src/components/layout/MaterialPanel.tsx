@@ -2,14 +2,8 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import {
-  Material,
-  MeshBasicMaterial,
-  MeshLambertMaterial,
-  MeshPhongMaterial,
-  MeshPhysicalMaterial,
-  MeshStandardMaterial,
-} from "three";
+import { Material, MeshPhysicalMaterial, MeshStandardMaterial } from "three";
+import { SelectMaterial } from "../common/SelectMaterial";
 
 interface MaterialPanelProps {
   materials: Material[];
@@ -32,19 +26,6 @@ export const MaterialPanel = ({
   materialProperties,
   onPropertyChange,
 }: MaterialPanelProps) => {
-  const getMaterialName = (material: Material, index: number): string => {
-    return material.name || `Material ${index + 1}`;
-  };
-
-  const getMaterialType = (material: Material): string => {
-    if (material instanceof MeshStandardMaterial) return "Standard";
-    if (material instanceof MeshPhysicalMaterial) return "Physical";
-    if (material instanceof MeshBasicMaterial) return "Basic";
-    if (material instanceof MeshLambertMaterial) return "Lambert";
-    if (material instanceof MeshPhongMaterial) return "Phong";
-    return "Unknown";
-  };
-
   const canEditMaterial = (material: Material): boolean => {
     return (
       material instanceof MeshStandardMaterial ||
@@ -54,7 +35,7 @@ export const MaterialPanel = ({
 
   return (
     <div className="w-80 bg-panel border-l border-panel-border h-full overflow-y-auto">
-      <div className="p-6">
+      <div className="p-4">
         <h2 className="text-xl font-semibold mb-6">Material Editor</h2>
 
         {materials.length === 0 ? (
@@ -69,40 +50,11 @@ export const MaterialPanel = ({
               <h3 className="text-sm font-medium mb-3 text-muted-foreground uppercase tracking-wide">
                 Materials ({materials.length})
               </h3>
-              <div className="space-y-2">
-                {materials.map((material, index) => (
-                  <Card
-                    key={material.uuid}
-                    className={`p-3 cursor-pointer transition-all duration-200 hover:bg-material-hover ${
-                      selectedMaterial === material
-                        ? "ring-2 ring-primary bg-secondary"
-                        : "bg-card"
-                    }`}
-                    onClick={() => onMaterialSelect(material)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="font-medium text-sm">
-                          {getMaterialName(material, index)}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {getMaterialType(material)}
-                        </div>
-                      </div>
-                      <div
-                        className="w-6 h-6 rounded border border-border flex-shrink-0"
-                        style={{
-                          backgroundColor:
-                            material instanceof MeshStandardMaterial ||
-                            material instanceof MeshPhysicalMaterial
-                              ? `#${material.color.getHexString()}`
-                              : "#666666",
-                        }}
-                      />
-                    </div>
-                  </Card>
-                ))}
-              </div>
+              <SelectMaterial
+                onMaterialSelect={onMaterialSelect}
+                selectedMaterial={selectedMaterial}
+                materials={materials}
+              />
             </div>
 
             {/* Material Properties */}
