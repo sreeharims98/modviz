@@ -1,15 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ACESFilmicToneMapping,
+  AmbientLight,
   Box3,
   BoxGeometry,
+  Color,
+  DirectionalLight,
   EquirectangularReflectionMapping,
   Group,
   Material,
   Mesh,
   MeshBasicMaterial,
+  MeshPhysicalMaterial,
+  MeshStandardMaterial,
   PCFSoftShadowMap,
   PerspectiveCamera,
+  PlaneGeometry,
   Scene,
   Vector3,
   WebGLRenderer,
@@ -22,17 +28,21 @@ import {
 
 interface ModelViewerProps {
   onMaterialsFound: (materials: Material[]) => void;
-  //   selectedMaterial: Material | null;
-  //   materialProperties: {
-  //     color: string;
-  //     metalness: number;
-  //     roughness: number;
-  //     emissive: string;
-  //     emissiveIntensity: number;
-  //   };
+  selectedMaterial: Material | null;
+  materialProperties: {
+    color: string;
+    metalness: number;
+    roughness: number;
+    emissive: string;
+    emissiveIntensity: number;
+  };
 }
 
-export default function ModelViewer({ onMaterialsFound }: ModelViewerProps) {
+export default function ModelViewer({
+  onMaterialsFound,
+  selectedMaterial,
+  materialProperties,
+}: ModelViewerProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<Scene | null>(null);
   const rendererRef = useRef<WebGLRenderer | null>(null);
@@ -46,7 +56,7 @@ export default function ModelViewer({ onMaterialsFound }: ModelViewerProps) {
   useEffect(() => {
     if (!mountRef.current) return;
 
-    console.log("mountRef.current", mountRef.current);
+    const mountNode = mountRef.current;
 
     const scene = new Scene();
     sceneRef.current = scene;
@@ -54,7 +64,7 @@ export default function ModelViewer({ onMaterialsFound }: ModelViewerProps) {
     // Camera setup
     const camera = new PerspectiveCamera(
       75,
-      mountRef.current.clientWidth / mountRef.current.clientHeight,
+      mountNode.clientWidth / mountNode.clientHeight,
       0.1,
       1000
     );
@@ -62,10 +72,7 @@ export default function ModelViewer({ onMaterialsFound }: ModelViewerProps) {
 
     // Renderer setup
     const renderer = new WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(
-      mountRef.current.clientWidth,
-      mountRef.current.clientHeight
-    );
+    renderer.setSize(mountNode.clientWidth, mountNode.clientHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.toneMapping = ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1;
@@ -73,7 +80,7 @@ export default function ModelViewer({ onMaterialsFound }: ModelViewerProps) {
     renderer.shadowMap.type = PCFSoftShadowMap;
     rendererRef.current = renderer;
 
-    mountRef.current.appendChild(renderer.domElement);
+    mountNode.appendChild(renderer.domElement);
 
     // Controls
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -89,21 +96,45 @@ export default function ModelViewer({ onMaterialsFound }: ModelViewerProps) {
         (texture) => {
           texture.mapping = EquirectangularReflectionMapping;
           scene.environment = texture;
-          //   scene.background = texture;
-          //   scene.backgroundBlurriness = 0.8;
+          scene.castShadow = true;
+          scene.background = texture;
+          scene.backgroundBlurriness = 0.8;
           //   toast.success("HDR environment loaded");
         },
         undefined,
         (error) => {
           console.warn(
+            error,
             "HDR environment failed to load, using fallback lighting"
           );
-          //   setupFallbackLighting();
         }
       );
     };
 
+    const setupLighting = () => {
+      // Key light
+      const keyLight = new DirectionalLight(0xffffff, 2);
+      keyLight.position.set(10, 10, 5);
+      keyLight.castShadow = true;
+      scene.add(keyLight);
+      // Set clean white background
+      scene.background = new Color(0xffffff);
+    };
+
+    // const addFloor = () => {
+    //   //add floor
+    //   const floor = new Mesh(
+    //     new PlaneGeometry(10, 10),
+    //     new MeshStandardMaterial({ color: 0xffffff })
+    //   );
+    //   floor.rotation.x = -Math.PI / 2;
+    //   floor.receiveShadow = true;
+    //   scene.add(floor);
+    // };
+
     setupEnvironment();
+    setupLighting();
+    // addFloor();
 
     // Animation loop
     const animate = () => {
@@ -115,24 +146,17 @@ export default function ModelViewer({ onMaterialsFound }: ModelViewerProps) {
 
     // Handle resize
     const handleResize = () => {
-      if (!mountRef.current) return;
-      camera.aspect =
-        mountRef.current.clientWidth / mountRef.current.clientHeight;
+      if (!mountNode) return;
+      camera.aspect = mountNode.clientWidth / mountNode.clientHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(
-        mountRef.current.clientWidth,
-        mountRef.current.clientHeight
-      );
+      renderer.setSize(mountNode.clientWidth, mountNode.clientHeight);
     };
     window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      if (
-        mountRef.current &&
-        renderer.domElement.parentNode === mountRef.current
-      ) {
-        mountRef.current.removeChild(renderer.domElement);
+      if (mountNode && renderer.domElement.parentNode === mountNode) {
+        mountNode.removeChild(renderer.domElement);
       }
       renderer.dispose();
     };
@@ -198,7 +222,7 @@ export default function ModelViewer({ onMaterialsFound }: ModelViewerProps) {
         );
 
         sceneRef.current.add(model);
-        // onMaterialsFound(uniqueMaterials);
+        onMaterialsFound(uniqueMaterials);
         // toast.success(`Model loaded with ${uniqueMaterials.length} materials`);
         URL.revokeObjectURL(url);
       },
@@ -262,10 +286,31 @@ export default function ModelViewer({ onMaterialsFound }: ModelViewerProps) {
     e.target.value = "";
   };
 
+  // Update material properties when selectedMaterial or properties change
+  useEffect(() => {
+    if (!selectedMaterial) return;
+
+    if (
+      selectedMaterial instanceof MeshStandardMaterial ||
+      selectedMaterial instanceof MeshPhysicalMaterial
+    ) {
+      selectedMaterial.color.setHex(
+        parseInt(materialProperties.color.replace("#", ""), 16)
+      );
+      selectedMaterial.metalness = materialProperties.metalness;
+      selectedMaterial.roughness = materialProperties.roughness;
+      selectedMaterial.emissive.setHex(
+        parseInt(materialProperties.emissive.replace("#", ""), 16)
+      );
+      selectedMaterial.emissiveIntensity = materialProperties.emissiveIntensity;
+      selectedMaterial.needsUpdate = true;
+    }
+  }, [selectedMaterial, materialProperties]);
+
   return (
     <div
       ref={mountRef}
-      className={`relative w-screen h-screen bg-viewport rounded-lg overflow-hidden transition-all duration-200 ${
+      className={`relative w-full h-full bg-viewport rounded-lg overflow-hidden transition-all duration-200 ${
         isDragOver ? "ring-2 ring-primary" : ""
       }`}
       onDrop={handleDrop}
