@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,8 @@ interface MaterialPanelProps {
     emissive: string;
     emissiveIntensity: number;
   };
-  onPropertyChange: (property: string, value: string) => void;
+  onPropertyChange: (property: string, value: string | number) => void;
+  resetProperties: () => void;
 }
 
 export const MaterialPanel = ({
@@ -25,6 +25,7 @@ export const MaterialPanel = ({
   onMaterialSelect,
   materialProperties,
   onPropertyChange,
+  resetProperties,
 }: MaterialPanelProps) => {
   const canEditMaterial = (material: Material): boolean => {
     return (
@@ -88,7 +89,7 @@ export const MaterialPanel = ({
                 </div>
 
                 {/* Metalness */}
-                {/* <div className="space-y-3">
+                <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <Label className="text-sm font-medium">Metalness</Label>
                     <span className="text-sm text-muted-foreground">
@@ -105,10 +106,10 @@ export const MaterialPanel = ({
                     step={0.01}
                     className="w-full"
                   />
-                </div> */}
+                </div>
 
                 {/* Roughness */}
-                {/* <div className="space-y-3">
+                <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <Label className="text-sm font-medium">Roughness</Label>
                     <span className="text-sm text-muted-foreground">
@@ -125,10 +126,10 @@ export const MaterialPanel = ({
                     step={0.01}
                     className="w-full"
                   />
-                </div> */}
+                </div>
 
                 {/* Emissive Color */}
-                {/* <div className="space-y-2">
+                <div className="space-y-2">
                   <Label className="text-sm font-medium">Emissive Color</Label>
                   <div className="flex items-center space-x-3">
                     <input
@@ -148,10 +149,10 @@ export const MaterialPanel = ({
                       className="flex-1 px-3 py-1 text-sm bg-input border border-border rounded"
                     />
                   </div>
-                </div> */}
+                </div>
 
                 {/* Emissive Intensity */}
-                {/* <div className="space-y-3">
+                <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <Label className="text-sm font-medium">
                       Emissive Intensity
@@ -170,22 +171,16 @@ export const MaterialPanel = ({
                     step={0.01}
                     className="w-full"
                   />
-                </div> */}
+                </div>
 
                 {/* Reset Button */}
-                {/* <Button
+                <Button
                   variant="outline"
-                  onClick={() => {
-                    onPropertyChange("color", "#ffffff");
-                    onPropertyChange("metalness", 0);
-                    onPropertyChange("roughness", 0.5);
-                    onPropertyChange("emissive", "#000000");
-                    onPropertyChange("emissiveIntensity", 0);
-                  }}
+                  onClick={resetProperties}
                   className="w-full"
                 >
                   Reset Properties
-                </Button> */}
+                </Button>
               </div>
             )}
 

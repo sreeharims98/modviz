@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
   ACESFilmicToneMapping,
   AmbientLight,
@@ -99,7 +100,6 @@ export default function ModelViewer({
           scene.castShadow = true;
           scene.background = texture;
           scene.backgroundBlurriness = 0.8;
-          //   toast.success("HDR environment loaded");
         },
         undefined,
         (error) => {
@@ -223,7 +223,6 @@ export default function ModelViewer({
 
         sceneRef.current.add(model);
         onMaterialsFound(uniqueMaterials);
-        // toast.success(`Model loaded with ${uniqueMaterials.length} materials`);
         URL.revokeObjectURL(url);
       },
       (progress) => {
@@ -231,7 +230,7 @@ export default function ModelViewer({
       },
       (error) => {
         console.error("Error loading model:", error);
-        // toast.error("Failed to load model");
+        toast.error("Failed to load model");
         URL.revokeObjectURL(url);
       }
     );
@@ -251,7 +250,7 @@ export default function ModelViewer({
     if (glbFile) {
       loadModel(glbFile);
     } else {
-      //   toast.error("Please drop a GLB or GLTF file");
+      toast.error("Please drop a GLB or GLTF file");
     }
   };
 
@@ -280,7 +279,7 @@ export default function ModelViewer({
     if (glbFile) {
       loadModel(glbFile);
     } else {
-      //   toast.error("Please select a GLB or GLTF file");
+      toast.error("Please select a GLB or GLTF file");
     }
     // Reset input so same file can be selected again
     e.target.value = "";
