@@ -1,32 +1,25 @@
 import { useAppContext } from "@/context/AppContext";
+import {
+  centerAndScaleModel,
+  enableModelShadows,
+  getUniqueModelMaterials,
+  initCamera,
+  initOrbitControls,
+  initRenderer,
+  initScene,
+  loadGLTFModel,
+  setupEnvironment,
+  setupLighting,
+} from "@/lib/threejs";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
-  ACESFilmicToneMapping,
-  AmbientLight,
-  Box3,
-  BoxGeometry,
-  Color,
-  DirectionalLight,
-  EquirectangularReflectionMapping,
   Group,
-  Material,
-  Mesh,
-  MeshBasicMaterial,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
-  PCFSoftShadowMap,
-  PerspectiveCamera,
-  PlaneGeometry,
   Scene,
-  Vector3,
   WebGLRenderer,
 } from "three";
-import {
-  GLTFLoader,
-  OrbitControls,
-  RGBELoader,
-} from "three/examples/jsm/Addons.js";
 
 export default function ModelViewer() {
   const {
@@ -50,81 +43,27 @@ export default function ModelViewer() {
 
     const mountNode = mountRef.current;
 
-    const scene = new Scene();
+    //scene setup
+    const scene = initScene();
     sceneRef.current = scene;
 
     // Camera setup
-    const camera = new PerspectiveCamera(
-      75,
-      mountNode.clientWidth / mountNode.clientHeight,
-      0.1,
-      1000
-    );
-    camera.position.set(5, 3, 5);
+    const camera = initCamera(mountNode);
 
     // Renderer setup
-    const renderer = new WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(mountNode.clientWidth, mountNode.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.toneMapping = ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1;
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = PCFSoftShadowMap;
+    const renderer = initRenderer(mountNode);
     rendererRef.current = renderer;
-
     mountNode.appendChild(renderer.domElement);
 
     // Controls
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
+    const controls = initOrbitControls(camera, renderer);
 
-    // Setup neutral environment lighting
-    const setupEnvironment = () => {
-      // Try to load HDR environment first
-      const rgbeLoader = new RGBELoader();
-      rgbeLoader.load(
-        "./blocky_photo_studio_1k.hdr",
-        (texture) => {
-          texture.mapping = EquirectangularReflectionMapping;
-          scene.environment = texture;
-          scene.castShadow = true;
-          scene.background = texture;
-          scene.backgroundBlurriness = 0.8;
-        },
-        undefined,
-        (error) => {
-          console.warn(
-            error,
-            "HDR environment failed to load, using fallback lighting"
-          );
-        }
-      );
-    };
+    // Setup environment
+    setupEnvironment("./blocky_photo_studio_1k.hdr", scene);
 
-    const setupLighting = () => {
-      // Key light
-      const keyLight = new DirectionalLight(0xffffff, 2);
-      keyLight.position.set(10, 10, 5);
-      keyLight.castShadow = true;
-      scene.add(keyLight);
-      // Set clean white background
-      scene.background = new Color(0xffffff);
-    };
+    //Setup Lighting
+    setupLighting(scene);
 
-    // const addFloor = () => {
-    //   //add floor
-    //   const floor = new Mesh(
-    //     new PlaneGeometry(10, 10),
-    //     new MeshStandardMaterial({ color: 0xffffff })
-    //   );
-    //   floor.rotation.x = -Math.PI / 2;
-    //   floor.receiveShadow = true;
-    //   scene.add(floor);
-    // };
-
-    setupEnvironment();
-    setupLighting();
     // addFloor();
 
     // Animation loop
@@ -153,78 +92,34 @@ export default function ModelViewer() {
     };
   }, []);
 
-  const loadModel = (file: File) => {
-    const loader = new GLTFLoader();
-    const url = URL.createObjectURL(file);
+  const loadModel = async (file: File) => {
+    try {
+      const model = await loadGLTFModel(file);
+      if (!sceneRef.current) return;
 
-    loader.load(
-      url,
-      (gltf) => {
-        if (!sceneRef.current) return;
-
-        // Remove previous model
-        if (modelRef.current) {
-          sceneRef.current.remove(modelRef.current);
-        }
-
-        const model = gltf.scene;
-        modelRef.current = model;
-        setIsModelLoaded(true);
-
-        // Center and scale model, positioning it above the floor
-        const box = new Box3().setFromObject(model);
-        const center = box.getCenter(new Vector3());
-        const size = box.getSize(new Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 3 / maxDim;
-
-        model.scale.setScalar(scale);
-
-        // Position model so its bottom sits on the floor
-        const scaledSize = size.multiplyScalar(scale);
-        model.position.set(
-          -center.x * scale,
-          -box.min.y * scale, // Position so bottom of model is at y=0 (floor level)
-          -center.z * scale
-        );
-
-        // Enable shadows
-        model.traverse((child) => {
-          if (child instanceof Mesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-          }
-        });
-
-        // Extract materials
-        const materials: Material[] = [];
-        model.traverse((child) => {
-          if (child instanceof Mesh && child.material) {
-            if (Array.isArray(child.material)) {
-              materials.push(...child.material);
-            } else {
-              materials.push(child.material);
-            }
-          }
-        });
-
-        const uniqueMaterials = materials.filter(
-          (material, index, self) => self.indexOf(material) === index
-        );
-
-        sceneRef.current.add(model);
-        handleMaterialsFound(uniqueMaterials);
-        URL.revokeObjectURL(url);
-      },
-      (progress) => {
-        console.log("Loading progress:", progress);
-      },
-      (error) => {
-        console.error("Error loading model:", error);
-        toast.error("Failed to load model");
-        URL.revokeObjectURL(url);
+      // Remove previous model
+      if (modelRef.current) {
+        sceneRef.current.remove(modelRef.current);
       }
-    );
+
+      modelRef.current = model;
+      setIsModelLoaded(true);
+
+      // Center and scale model, positioning it above the floor
+      centerAndScaleModel(model);
+
+      // Enable shadows
+      enableModelShadows(model);
+
+      // Extract unique materials from model
+      const uniqueMaterials = getUniqueModelMaterials(model);
+
+      sceneRef.current.add(model);
+      handleMaterialsFound(uniqueMaterials);
+    } catch (error) {
+      console.error("Error loading model:", error);
+      toast.error("Failed to load model");
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {

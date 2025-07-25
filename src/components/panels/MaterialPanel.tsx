@@ -2,14 +2,13 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Material, MeshPhysicalMaterial, MeshStandardMaterial } from "three";
-import { SelectMaterial } from "../common/SelectMaterial";
+import { SelectMaterial } from "../SelectMaterial";
 import { useAppContext } from "@/context/AppContext";
 
 export const MaterialPanel = () => {
   const {
     materials,
     selectedMaterial,
-    handleMaterialSelect,
     materialProperties,
     handlePropertyChange,
     resetProperties,

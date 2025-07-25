@@ -1,7 +1,6 @@
 "use client";
-
-import ModelViewer from "../components/layout/ModelViewer";
-import { Panel } from "@/components/layout/Panel";
+import ModelViewer from "../components/ModelViewer";
+import { Panel } from "@/components/panels/Panel";
 import { AppProvider } from "@/context/AppContext";
 
 export default function Home() {
