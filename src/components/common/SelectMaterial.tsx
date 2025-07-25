@@ -5,6 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAppContext } from "@/context/AppContext";
 import {
   Material,
   MeshBasicMaterial,
@@ -14,17 +15,9 @@ import {
   MeshStandardMaterial,
 } from "three";
 
-interface SelectMaterialProps {
-  materials: Material[];
-  selectedMaterial: Material | null;
-  onMaterialSelect: (material: Material) => void;
-}
+export function SelectMaterial() {
+  const { materials, selectedMaterial, handleMaterialSelect } = useAppContext();
 
-export function SelectMaterial({
-  materials,
-  selectedMaterial,
-  onMaterialSelect,
-}: SelectMaterialProps) {
   const getMaterialName = (material: Material, index: number): string => {
     return material.name || `Material ${index + 1}`;
   };
@@ -42,7 +35,9 @@ export function SelectMaterial({
     <Select
       value={selectedMaterial?.uuid}
       onValueChange={(value) =>
-        onMaterialSelect(materials.find((material) => material.uuid === value)!)
+        handleMaterialSelect(
+          materials.find((material) => material.uuid === value)!
+        )
       }
     >
       <SelectTrigger className="w-full" style={{ height: "52px" }}>

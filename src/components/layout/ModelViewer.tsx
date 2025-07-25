@@ -1,3 +1,4 @@
+import { useAppContext } from "@/context/AppContext";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -27,30 +28,20 @@ import {
   RGBELoader,
 } from "three/examples/jsm/Addons.js";
 
-interface ModelViewerProps {
-  onMaterialsFound: (materials: Material[]) => void;
-  selectedMaterial: Material | null;
-  materialProperties: {
-    color: string;
-    metalness: number;
-    roughness: number;
-    emissive: string;
-    emissiveIntensity: number;
-  };
-}
+export default function ModelViewer() {
+  const {
+    isModelLoaded,
+    setIsModelLoaded,
+    selectedMaterial,
+    materialProperties,
+    handleMaterialsFound,
+  } = useAppContext();
 
-export default function ModelViewer({
-  onMaterialsFound,
-  selectedMaterial,
-  materialProperties,
-}: ModelViewerProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<Scene | null>(null);
   const rendererRef = useRef<WebGLRenderer | null>(null);
   const modelRef = useRef<Group | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [isModelLoaded, setIsModelLoaded] = useState(false);
 
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -222,7 +213,7 @@ export default function ModelViewer({
         );
 
         sceneRef.current.add(model);
-        onMaterialsFound(uniqueMaterials);
+        handleMaterialsFound(uniqueMaterials);
         URL.revokeObjectURL(url);
       },
       (progress) => {
