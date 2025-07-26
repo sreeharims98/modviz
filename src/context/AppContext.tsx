@@ -6,8 +6,8 @@ import React, {
   ReactNode,
 } from "react";
 import { Material, MeshPhysicalMaterial, MeshStandardMaterial } from "three";
-import { MaterialProps } from "@/types";
-import { DEFAULT_MATERIAL_PROPS } from "@/constants";
+import { LightsProps, MaterialProps } from "@/types";
+import { DEFAULT_LIGHT_SETTINGS, DEFAULT_MATERIAL_SETTINGS } from "@/constants";
 
 interface AppContextType {
   //scene
@@ -16,11 +16,18 @@ interface AppContextType {
   //materials
   materials: Material[];
   selectedMaterial: Material | null;
-  materialProperties: MaterialProps;
+  materialSettings: MaterialProps;
   handleMaterialsFound: (foundMaterials: Material[]) => void;
   handleMaterialSelect: (material: Material) => void;
-  handlePropertyChange: (property: string, value: string | number) => void;
-  resetProperties: () => void;
+  handleMaterialSettingsChange: (
+    property: string,
+    value: string | number
+  ) => void;
+  resetMaterialSettings: () => void;
+  //lights
+  lightSettings: LightsProps;
+  setLightSettings: React.Dispatch<React.SetStateAction<LightsProps>>;
+  resetLightSettings: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -34,13 +41,19 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(
     null
   );
-  const [materialProperties, setMaterialProperties] = useState<MaterialProps>(
-    DEFAULT_MATERIAL_PROPS
+  const [materialSettings, setMaterialSettings] = useState<MaterialProps>(
+    DEFAULT_MATERIAL_SETTINGS
   );
-  const selectedMaterialProperties = useRef<MaterialProps>(
-    DEFAULT_MATERIAL_PROPS
+  const selectedMaterialSettings = useRef<MaterialProps>(
+    DEFAULT_MATERIAL_SETTINGS
   );
 
+  //lights
+  const [lightSettings, setLightSettings] = useState<LightsProps>(
+    DEFAULT_LIGHT_SETTINGS
+  );
+
+  //materials
   const handleMaterialsFound = (foundMaterials: Material[]) => {
     setMaterials(foundMaterials);
     if (foundMaterials.length > 0) {
@@ -64,27 +77,36 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       material instanceof MeshStandardMaterial ||
       material instanceof MeshPhysicalMaterial
     ) {
-      const properties = {
+      const setings = {
         color: `#${material.color.getHexString()}`,
         metalness: material.metalness,
         roughness: material.roughness,
         emissive: `#${material.emissive.getHexString()}`,
         emissiveIntensity: material.emissiveIntensity,
       };
-      setMaterialProperties(properties);
-      selectedMaterialProperties.current = { ...properties };
+      setMaterialSettings(setings);
+      selectedMaterialSettings.current = { ...setings };
     }
   };
 
-  const handlePropertyChange = (property: string, value: string | number) => {
-    setMaterialProperties((prev) => ({
+  const handleMaterialSettingsChange = (
+    property: string,
+    value: string | number
+  ) => {
+    setMaterialSettings((prev) => ({
       ...prev,
       [property]: value,
     }));
   };
 
-  const resetProperties = () => {
-    setMaterialProperties({ ...selectedMaterialProperties.current });
+  const resetMaterialSettings = () => {
+    setMaterialSettings({ ...selectedMaterialSettings.current });
+  };
+
+  //lights
+
+  const resetLightSettings = () => {
+    setLightSettings({ ...DEFAULT_LIGHT_SETTINGS });
   };
 
   return (
@@ -96,11 +118,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         //materials
         materials,
         selectedMaterial,
-        materialProperties,
+        materialSettings,
         handleMaterialsFound,
         handleMaterialSelect,
-        handlePropertyChange,
-        resetProperties,
+        handleMaterialSettingsChange,
+        resetMaterialSettings,
+        //lights
+        lightSettings,
+        setLightSettings,
+        resetLightSettings,
       }}
     >
       {children}

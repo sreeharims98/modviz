@@ -1,24 +1,23 @@
 import { useAppContext } from "@/context/AppContext";
 import {
   centerAndScaleModel,
-  enableModelShadows,
   getUniqueModelMaterials,
   initCamera,
   initOrbitControls,
   initRenderer,
   initScene,
   loadGLTFModel,
+  setSceneEnvironment,
   setupEnvironment,
-  setupLighting,
 } from "@/lib/threejs";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
-  DataTexture,
   Group,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
   Scene,
+  Texture,
   WebGLRenderer,
 } from "three";
 
@@ -27,8 +26,9 @@ export default function ModelViewer() {
     isModelLoaded,
     setIsModelLoaded,
     selectedMaterial,
-    materialProperties,
+    materialSettings,
     handleMaterialsFound,
+    lightSettings,
   } = useAppContext();
 
   const mountRef = useRef<HTMLDivElement>(null);
@@ -36,17 +36,25 @@ export default function ModelViewer() {
   const rendererRef = useRef<WebGLRenderer | null>(null);
   const modelRef = useRef<Group | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const envTexture = useRef<DataTexture | null>(null);
+  const envTexture = useRef<Texture | null>(null);
+  // const lightRef = useRef<DirectionalLight | null>(null);
 
   const [isDragOver, setIsDragOver] = useState(false);
 
   // load environment
-  const loadEnvironment = async (url: string) => {
-    if (!sceneRef.current) return;
-
-    const texture = await setupEnvironment(url, sceneRef.current);
-    envTexture.current = texture;
-  };
+  const loadEnvironment = useCallback(
+    async (file: string | File) => {
+      if (!sceneRef.current) return;
+      const texture = await setupEnvironment(
+        file,
+        sceneRef.current,
+        lightSettings.blurriness,
+        lightSettings.useSkybox
+      );
+      envTexture.current = texture;
+    },
+    [lightSettings.blurriness, lightSettings.useSkybox]
+  );
 
   const loadModel = async (file: File) => {
     try {
@@ -65,7 +73,7 @@ export default function ModelViewer() {
       centerAndScaleModel(model);
 
       // Enable shadows
-      enableModelShadows(model);
+      // enableModelShadows(model);
 
       // Extract unique materials from model
       const uniqueMaterials = getUniqueModelMaterials(model);
@@ -133,56 +141,55 @@ export default function ModelViewer() {
 
     const mountNode = mountRef.current;
 
-    //scene setup
+    // Scene
     const scene = initScene();
     sceneRef.current = scene;
 
-    // Camera setup
+    // Camera
     const camera = initCamera(mountNode);
 
-    // Renderer setup
+    // Renderer
     const renderer = initRenderer(mountNode);
     rendererRef.current = renderer;
-    mountNode.appendChild(renderer.domElement);
+
+    // Avoid duplicate append in StrictMode
+    if (!mountNode.contains(renderer.domElement)) {
+      mountNode.appendChild(renderer.domElement);
+    }
 
     // Controls
     const controls = initOrbitControls(camera, renderer);
 
-    // Load initial environment
-    loadEnvironment("./blocky_photo_studio_1k.hdr");
-
-    //Setup Lighting
-    setupLighting(scene);
-
-    // addFloor();
-
-    // Animation loop
-    const animate = () => {
-      requestAnimationFrame(animate);
+    // Animation loop (use setAnimationLoop instead of requestAnimationFrame)
+    renderer.setAnimationLoop(() => {
       controls.update();
       renderer.render(scene, camera);
-    };
-    animate();
+    });
 
-    // Handle resize
+    // Resize handling
     const handleResize = () => {
-      if (!mountNode) return;
-      camera.aspect = mountNode.clientWidth / mountNode.clientHeight;
+      const width = mountNode.clientWidth;
+      const height = mountNode.clientHeight;
+      camera.aspect = width / height;
       camera.updateProjectionMatrix();
-      renderer.setSize(mountNode.clientWidth, mountNode.clientHeight);
+      renderer.setSize(width, height);
     };
     window.addEventListener("resize", handleResize);
+    handleResize(); // initial size sync
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      if (mountNode && renderer.domElement.parentNode === mountNode) {
+      renderer.setAnimationLoop(null); // stop rendering
+      controls.dispose();
+      renderer.dispose();
+      // Remove renderer DOM if still present
+      if (renderer.domElement.parentNode === mountNode) {
         mountNode.removeChild(renderer.domElement);
       }
-      renderer.dispose();
     };
   }, []);
 
-  // Update material properties when selectedMaterial or properties change
+  // Update material settings when selectedMaterial or settings change
   useEffect(() => {
     if (!selectedMaterial) return;
 
@@ -191,17 +198,34 @@ export default function ModelViewer() {
       selectedMaterial instanceof MeshPhysicalMaterial
     ) {
       selectedMaterial.color.setHex(
-        parseInt(materialProperties.color.replace("#", ""), 16)
+        parseInt(materialSettings.color.replace("#", ""), 16)
       );
-      selectedMaterial.metalness = materialProperties.metalness;
-      selectedMaterial.roughness = materialProperties.roughness;
+      selectedMaterial.metalness = materialSettings.metalness;
+      selectedMaterial.roughness = materialSettings.roughness;
       selectedMaterial.emissive.setHex(
-        parseInt(materialProperties.emissive.replace("#", ""), 16)
+        parseInt(materialSettings.emissive.replace("#", ""), 16)
       );
-      selectedMaterial.emissiveIntensity = materialProperties.emissiveIntensity;
+      selectedMaterial.emissiveIntensity = materialSettings.emissiveIntensity;
       selectedMaterial.needsUpdate = true;
     }
-  }, [selectedMaterial, materialProperties]);
+  }, [selectedMaterial, materialSettings]);
+
+  //Update environment settings
+  useEffect(() => {
+    if (!sceneRef.current || !envTexture.current) return;
+    setSceneEnvironment(
+      sceneRef.current,
+      envTexture.current,
+      lightSettings.blurriness,
+      lightSettings.useSkybox
+    );
+  }, [lightSettings.blurriness, lightSettings.useSkybox]);
+
+  //Update environment
+  useEffect(() => {
+    const file = lightSettings.customHDR ?? lightSettings.environmentMap;
+    loadEnvironment(file);
+  }, [lightSettings.customHDR, lightSettings.environmentMap, loadEnvironment]);
 
   return (
     <div

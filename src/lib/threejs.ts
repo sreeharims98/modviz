@@ -1,3 +1,4 @@
+import { DEFAULT_LIGHT_SETTINGS } from "@/constants";
 import {
   ACESFilmicToneMapping,
   Box3,
@@ -13,7 +14,7 @@ import {
   Scene,
   Vector3,
   WebGLRenderer,
-  DataTexture,
+  Texture,
 } from "three";
 import {
   GLTFLoader,
@@ -78,41 +79,56 @@ export const initOrbitControls = (
 };
 
 /**
- * Loads an HDR environment texture and sets it as the scene's environment and background.
- * @param {string} url - The URL of the HDR image.
- * @param {Scene} scene - The scene to apply the environment to.
- * @returns {Promise<DataTexture>} Resolves with the loaded environment texture.
+ * Applies environment map to a given scene
+ */
+export const setSceneEnvironment = (
+  scene: Scene,
+  texture: Texture,
+  blurriness: number,
+  useSkybox: boolean
+) => {
+  texture.mapping = EquirectangularReflectionMapping;
+  scene.environment = texture;
+  scene.background = useSkybox ? texture : new Color(0xffffff);
+  scene.backgroundBlurriness = blurriness;
+};
+
+/**
+ * Loads HDR environment texture and applies it to the scene
  */
 export const setupEnvironment = async (
-  url: string,
-  scene: Scene
-): Promise<DataTexture> => {
+  file: string | File,
+  scene: Scene,
+  blurriness: number = DEFAULT_LIGHT_SETTINGS.blurriness,
+  useSkybox: boolean = DEFAULT_LIGHT_SETTINGS.useSkybox
+): Promise<Texture> => {
   const rgbeLoader = new RGBELoader();
-  try {
-    const texture = await rgbeLoader.loadAsync(url);
-    texture.mapping = EquirectangularReflectionMapping;
-    scene.environment = texture;
-    scene.castShadow = true;
-    scene.background = texture;
-    scene.backgroundBlurriness = 1;
+  let url = "";
 
+  try {
+    url = typeof file === "string" ? file : URL.createObjectURL(file);
+    const texture = await rgbeLoader.loadAsync(url);
+    setSceneEnvironment(scene, texture, blurriness, useSkybox);
     return texture;
   } catch (error) {
-    console.error("Error loading GLTF model:", error);
+    console.error(`Error loading HDR environment: ${file}`, error);
     throw error;
+  } finally {
+    if (typeof file !== "string" && url) URL.revokeObjectURL(url);
   }
 };
 
 /**
  * Adds a directional key light to the scene and sets the background color.
  * @param {Scene} scene - The scene to add lighting to.
+ * @return {DirectionalLight} The created directional light.
  */
-export const setupLighting = (scene: Scene) => {
-  const keyLight = new DirectionalLight(0xffffff, 2);
-  keyLight.position.set(10, 10, 5);
-  keyLight.castShadow = true;
-  scene.add(keyLight);
-  scene.background = new Color(0xffffff);
+export const setupLighting = (scene: Scene): DirectionalLight => {
+  const light = new DirectionalLight(0xffffff, 1);
+  light.position.set(10, 10, 5);
+  light.castShadow = true;
+  scene.add(light);
+  return light;
 };
 
 //export  const addFloor = () => {

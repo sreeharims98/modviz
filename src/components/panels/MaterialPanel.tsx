@@ -10,9 +10,9 @@ export const MaterialPanel = () => {
   const {
     materials,
     selectedMaterial,
-    materialProperties,
-    handlePropertyChange,
-    resetProperties,
+    materialSettings,
+    handleMaterialSettingsChange,
+    resetMaterialSettings,
   } = useAppContext();
 
   const canEditMaterial = (material: Material): boolean => {
@@ -36,11 +36,11 @@ export const MaterialPanel = () => {
             <SelectMaterial />
           </div>
 
-          {/* Material Properties */}
+          {/* Material Settings */}
           {selectedMaterial && canEditMaterial(selectedMaterial) && (
             <div className="space-y-6">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                Properties
+                Settings
               </h3>
 
               {/* Base Color */}
@@ -49,17 +49,17 @@ export const MaterialPanel = () => {
                 <div className="flex items-center space-x-3">
                   <input
                     type="color"
-                    value={materialProperties.color}
+                    value={materialSettings.color}
                     onChange={(e) =>
-                      handlePropertyChange("color", e.target.value)
+                      handleMaterialSettingsChange("color", e.target.value)
                     }
                     className="w-12 h-8 rounded border border-border cursor-pointer"
                   />
                   <input
                     type="text"
-                    value={materialProperties.color}
+                    value={materialSettings.color}
                     onChange={(e) =>
-                      handlePropertyChange("color", e.target.value)
+                      handleMaterialSettingsChange("color", e.target.value)
                     }
                     className="flex-1 px-3 py-1 text-sm bg-input border border-border rounded"
                   />
@@ -71,17 +71,17 @@ export const MaterialPanel = () => {
                 <div className="flex justify-between items-center">
                   <Label className="text-sm font-medium">Metalness</Label>
                   <span className="text-sm text-muted-foreground">
-                    {materialProperties.metalness.toFixed(2)}
+                    {materialSettings.metalness.toFixed(2)}
                   </span>
                 </div>
                 <Slider
-                  value={[materialProperties.metalness]}
+                  value={[materialSettings.metalness]}
                   onValueChange={([value]) =>
-                    handlePropertyChange("metalness", value)
+                    handleMaterialSettingsChange("metalness", value)
                   }
                   min={0}
                   max={1}
-                  step={0.01}
+                  step={0.1}
                   className="w-full"
                 />
               </div>
@@ -91,17 +91,17 @@ export const MaterialPanel = () => {
                 <div className="flex justify-between items-center">
                   <Label className="text-sm font-medium">Roughness</Label>
                   <span className="text-sm text-muted-foreground">
-                    {materialProperties.roughness.toFixed(2)}
+                    {materialSettings.roughness.toFixed(2)}
                   </span>
                 </div>
                 <Slider
-                  value={[materialProperties.roughness]}
+                  value={[materialSettings.roughness]}
                   onValueChange={([value]) =>
-                    handlePropertyChange("roughness", value)
+                    handleMaterialSettingsChange("roughness", value)
                   }
                   min={0}
                   max={1}
-                  step={0.01}
+                  step={0.1}
                   className="w-full"
                 />
               </div>
@@ -112,17 +112,17 @@ export const MaterialPanel = () => {
                 <div className="flex items-center space-x-3">
                   <input
                     type="color"
-                    value={materialProperties.emissive}
+                    value={materialSettings.emissive}
                     onChange={(e) =>
-                      handlePropertyChange("emissive", e.target.value)
+                      handleMaterialSettingsChange("emissive", e.target.value)
                     }
                     className="w-12 h-8 rounded border border-border cursor-pointer"
                   />
                   <input
                     type="text"
-                    value={materialProperties.emissive}
+                    value={materialSettings.emissive}
                     onChange={(e) =>
-                      handlePropertyChange("emissive", e.target.value)
+                      handleMaterialSettingsChange("emissive", e.target.value)
                     }
                     className="flex-1 px-3 py-1 text-sm bg-input border border-border rounded"
                   />
@@ -136,43 +136,45 @@ export const MaterialPanel = () => {
                     Emissive Intensity
                   </Label>
                   <span className="text-sm text-muted-foreground">
-                    {materialProperties.emissiveIntensity.toFixed(2)}
+                    {materialSettings.emissiveIntensity.toFixed(2)}
                   </span>
                 </div>
                 <Slider
-                  value={[materialProperties.emissiveIntensity]}
+                  value={[materialSettings.emissiveIntensity]}
                   onValueChange={([value]) =>
-                    handlePropertyChange("emissiveIntensity", value)
+                    handleMaterialSettingsChange("emissiveIntensity", value)
                   }
                   min={0}
                   max={2}
-                  step={0.01}
+                  step={0.1}
                   className="w-full"
                 />
               </div>
 
               {/* Reset Button */}
-              <Button
-                variant="outline"
-                onClick={resetProperties}
-                className="w-full"
-              >
-                Reset Properties
-              </Button>
+              <div className="border-t pt-4 space-y-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={resetMaterialSettings}
+                  className="w-full"
+                >
+                  Reset this Material
+                </Button>
+              </div>
             </div>
           )}
 
-          {/* {selectedMaterial && !canEditMaterial(selectedMaterial) && (
-              <div className="text-center text-muted-foreground py-8">
-                <div className="text-4xl mb-4 opacity-50">🔒</div>
-                <p className="text-sm">
-                  This material type ({getMaterialType(selectedMaterial)}) is
-                  not editable.
-                  <br />
-                  Try selecting a Standard or Physical material.
-                </p>
-              </div>
-            )} */}
+          {selectedMaterial && !canEditMaterial(selectedMaterial) && (
+            <div className="text-center text-muted-foreground py-8">
+              <div className="text-4xl mb-4 opacity-50">🔒</div>
+              <p className="text-sm">
+                This material type is not editable.
+                <br />
+                Try selecting a Standard or Physical material.
+              </p>
+            </div>
+          )}
         </>
       )}
     </div>

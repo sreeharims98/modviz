@@ -5,3 +5,11 @@ export interface MaterialProps {
   emissive: string;
   emissiveIntensity: number;
 }
+
+export interface LightsProps {
+  intensity: number;
+  environmentMap: string;
+  blurriness: number;
+  useSkybox: boolean;
+  customHDR: File | null;
+}
