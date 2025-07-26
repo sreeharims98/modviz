@@ -11,9 +11,10 @@ import {
   setupEnvironment,
   setupLighting,
 } from "@/lib/threejs";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
+  DataTexture,
   Group,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
@@ -35,62 +36,17 @@ export default function ModelViewer() {
   const rendererRef = useRef<WebGLRenderer | null>(null);
   const modelRef = useRef<Group | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const envTexture = useRef<DataTexture | null>(null);
 
   const [isDragOver, setIsDragOver] = useState(false);
 
-  useEffect(() => {
-    if (!mountRef.current) return;
+  // load environment
+  const loadEnvironment = async (url: string) => {
+    if (!sceneRef.current) return;
 
-    const mountNode = mountRef.current;
-
-    //scene setup
-    const scene = initScene();
-    sceneRef.current = scene;
-
-    // Camera setup
-    const camera = initCamera(mountNode);
-
-    // Renderer setup
-    const renderer = initRenderer(mountNode);
-    rendererRef.current = renderer;
-    mountNode.appendChild(renderer.domElement);
-
-    // Controls
-    const controls = initOrbitControls(camera, renderer);
-
-    // Setup environment
-    setupEnvironment("./blocky_photo_studio_1k.hdr", scene);
-
-    //Setup Lighting
-    setupLighting(scene);
-
-    // addFloor();
-
-    // Animation loop
-    const animate = () => {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    };
-    animate();
-
-    // Handle resize
-    const handleResize = () => {
-      if (!mountNode) return;
-      camera.aspect = mountNode.clientWidth / mountNode.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(mountNode.clientWidth, mountNode.clientHeight);
-    };
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      if (mountNode && renderer.domElement.parentNode === mountNode) {
-        mountNode.removeChild(renderer.domElement);
-      }
-      renderer.dispose();
-    };
-  }, []);
+    const texture = await setupEnvironment(url, sceneRef.current);
+    envTexture.current = texture;
+  };
 
   const loadModel = async (file: File) => {
     try {
@@ -171,6 +127,61 @@ export default function ModelViewer() {
     e.target.value = "";
   };
 
+  // Initialize scene, camera, renderer, and controls
+  useEffect(() => {
+    if (!mountRef.current) return;
+
+    const mountNode = mountRef.current;
+
+    //scene setup
+    const scene = initScene();
+    sceneRef.current = scene;
+
+    // Camera setup
+    const camera = initCamera(mountNode);
+
+    // Renderer setup
+    const renderer = initRenderer(mountNode);
+    rendererRef.current = renderer;
+    mountNode.appendChild(renderer.domElement);
+
+    // Controls
+    const controls = initOrbitControls(camera, renderer);
+
+    // Load initial environment
+    loadEnvironment("./blocky_photo_studio_1k.hdr");
+
+    //Setup Lighting
+    setupLighting(scene);
+
+    // addFloor();
+
+    // Animation loop
+    const animate = () => {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    // Handle resize
+    const handleResize = () => {
+      if (!mountNode) return;
+      camera.aspect = mountNode.clientWidth / mountNode.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(mountNode.clientWidth, mountNode.clientHeight);
+    };
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (mountNode && renderer.domElement.parentNode === mountNode) {
+        mountNode.removeChild(renderer.domElement);
+      }
+      renderer.dispose();
+    };
+  }, []);
+
   // Update material properties when selectedMaterial or properties change
   useEffect(() => {
     if (!selectedMaterial) return;
@@ -195,39 +206,39 @@ export default function ModelViewer() {
   return (
     <div
       ref={mountRef}
-      className={`relative w-full h-full bg-viewport rounded-lg overflow-hidden transition-all duration-200 ${
-        isDragOver ? "ring-2 ring-primary" : ""
-      }`}
+      className={`relative w-full h-full rounded-lg overflow-hidden transition-all duration-200`}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onClick={() => !isModelLoaded && handleBrowseClick()}
       style={{ cursor: !isModelLoaded ? "pointer" : "default" }}
     >
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".glb,.gltf"
-        style={{ display: "none" }}
-        onChange={handleFileChange}
-      />
       {!isModelLoaded && (
-        <div
-          className={`absolute inset-4 border-2 border-dashed rounded-lg flex items-center justify-center transition-all duration-200 ${
-            isDragOver
-              ? "border-primary bg-dropzone-active"
-              : "border-dropzone-border bg-dropzone"
-          }`}
-        >
-          <div className="text-center">
-            <div className="text-6xl mb-4">📦</div>
-            <h3 className="text-xl font-semibold mb-2">
-              Drop or Click to Browse GLB/GLTF Model
-            </h3>
-            <p className="text-muted-foreground">
-              Drag and drop or click to select a 3D model file to start editing
-              materials
-            </p>
+        <div className="w-full h-full bg-gradient-to-r from-slate-500 to-gray-600">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".glb,.gltf"
+            style={{ display: "none" }}
+            onChange={handleFileChange}
+          />
+          <div
+            className={`absolute inset-4 border-2 border-dashed rounded-lg flex items-center justify-center transition-all duration-200 ${
+              isDragOver
+                ? "border-primary bg-dropzone-active"
+                : "border-dropzone-border bg-dropzone"
+            }`}
+          >
+            <div className="text-center">
+              <div className="text-6xl mb-4">📦</div>
+              <h3 className="text-xl text-stone-100 font-semibold mb-2">
+                Drop or Click to Browse GLB/GLTF Model
+              </h3>
+              <p className="text-stone-300">
+                Drag and drop or click to select a 3D model file to start
+                editing materials
+              </p>
+            </div>
           </div>
         </div>
       )}

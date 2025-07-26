@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Material, MeshPhysicalMaterial, MeshStandardMaterial } from "three";
 import { SelectMaterial } from "../SelectMaterial";
 import { useAppContext } from "@/context/AppContext";
+import { EmptyMessage } from "../EmptyMessage";
 
 export const MaterialPanel = () => {
   const {
@@ -24,10 +25,7 @@ export const MaterialPanel = () => {
   return (
     <div className="w-full h-full overflow-y-auto">
       {materials.length === 0 ? (
-        <div className="text-center text-muted-foreground py-8">
-          <div className="text-4xl mb-4 opacity-50">🎨</div>
-          <p>Load a 3D model to edit its materials</p>
-        </div>
+        <EmptyMessage icon="🎨" title="Load a 3D model to edit its materials" />
       ) : (
         <>
           {/* Material List */}

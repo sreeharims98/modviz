@@ -13,6 +13,7 @@ import {
   Scene,
   Vector3,
   WebGLRenderer,
+  DataTexture,
 } from "three";
 import {
   GLTFLoader,
@@ -80,27 +81,26 @@ export const initOrbitControls = (
  * Loads an HDR environment texture and sets it as the scene's environment and background.
  * @param {string} url - The URL of the HDR image.
  * @param {Scene} scene - The scene to apply the environment to.
- * @returns {Promise<void>} Resolves when the environment is set.
+ * @returns {Promise<DataTexture>} Resolves with the loaded environment texture.
  */
-export const setupEnvironment = async (url: string, scene: Scene) => {
+export const setupEnvironment = async (
+  url: string,
+  scene: Scene
+): Promise<DataTexture> => {
   const rgbeLoader = new RGBELoader();
-  rgbeLoader.load(
-    url,
-    (texture) => {
-      texture.mapping = EquirectangularReflectionMapping;
-      scene.environment = texture;
-      scene.castShadow = true;
-      scene.background = texture;
-      scene.backgroundBlurriness = 0.8;
-    },
-    undefined,
-    (error) => {
-      console.warn(
-        error,
-        "HDR environment failed to load, using fallback lighting"
-      );
-    }
-  );
+  try {
+    const texture = await rgbeLoader.loadAsync(url);
+    texture.mapping = EquirectangularReflectionMapping;
+    scene.environment = texture;
+    scene.castShadow = true;
+    scene.background = texture;
+    scene.backgroundBlurriness = 1;
+
+    return texture;
+  } catch (error) {
+    console.error("Error loading GLTF model:", error);
+    throw error;
+  }
 };
 
 /**
@@ -132,7 +132,9 @@ export const setupLighting = (scene: Scene) => {
  * @returns {Promise<Group<Object3DEventMap>>} The loaded model's scene group.
  * @throws Will throw if the model fails to load.
  */
-export const loadGLTFModel = async (file: File) => {
+export const loadGLTFModel = async (
+  file: File
+): Promise<Group<Object3DEventMap>> => {
   const url = URL.createObjectURL(file);
   const loader = new GLTFLoader();
 
