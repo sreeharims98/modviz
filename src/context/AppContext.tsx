@@ -1,11 +1,12 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useRef,
-  ReactNode,
-} from "react";
-import { Material, MeshPhysicalMaterial, MeshStandardMaterial } from "three";
+import { createContext, useContext, useState, useRef, ReactNode } from "react";
+import {
+  AnimationAction,
+  AnimationClip,
+  AnimationMixer,
+  Material,
+  MeshPhysicalMaterial,
+  MeshStandardMaterial,
+} from "three";
 import { LightsProps, MaterialProps } from "@/types";
 import { DEFAULT_LIGHT_SETTINGS, DEFAULT_MATERIAL_SETTINGS } from "@/constants";
 
@@ -28,6 +29,13 @@ interface AppContextType {
   lightSettings: LightsProps;
   setLightSettings: React.Dispatch<React.SetStateAction<LightsProps>>;
   resetLightSettings: () => void;
+  //animations
+  mixerRef: React.RefObject<AnimationMixer | null>;
+  clipsRef: React.RefObject<AnimationClip[]>;
+  currentAction: AnimationAction | null;
+  setCurrentAction: React.Dispatch<
+    React.SetStateAction<AnimationAction | null>
+  >;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -51,6 +59,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   //lights
   const [lightSettings, setLightSettings] = useState<LightsProps>(
     DEFAULT_LIGHT_SETTINGS
+  );
+
+  //animations
+  const mixerRef = useRef<AnimationMixer | null>(null);
+  const clipsRef = useRef<AnimationClip[]>([]);
+  const [currentAction, setCurrentAction] = useState<AnimationAction | null>(
+    null
   );
 
   //materials
@@ -127,6 +142,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         lightSettings,
         setLightSettings,
         resetLightSettings,
+        //animations
+        mixerRef,
+        clipsRef,
+        currentAction,
+        setCurrentAction,
       }}
     >
       {children}

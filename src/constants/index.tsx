@@ -2,7 +2,7 @@ import { MaterialProps } from "@/types";
 
 export const TABS = {
   MATERIALS: "Materials",
-  LIGHTS: "Lights",
+  SCENE: "Scene",
 };
 
 export const DEFAULT_MATERIAL_SETTINGS: MaterialProps = {

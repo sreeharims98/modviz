@@ -13,6 +13,8 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
+  AnimationMixer,
+  Clock,
   Group,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
@@ -29,6 +31,9 @@ export default function ModelViewer() {
     materialSettings,
     handleMaterialsFound,
     lightSettings,
+    mixerRef,
+    clipsRef,
+    setCurrentAction,
   } = useAppContext();
 
   const mountRef = useRef<HTMLDivElement>(null);
@@ -37,6 +42,7 @@ export default function ModelViewer() {
   const modelRef = useRef<Group | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const envTexture = useRef<Texture | null>(null);
+  const clockRef = useRef<Clock>(new Clock());
   // const lightRef = useRef<DirectionalLight | null>(null);
 
   const [isDragOver, setIsDragOver] = useState(false);
@@ -58,7 +64,7 @@ export default function ModelViewer() {
 
   const loadModel = async (file: File) => {
     try {
-      const model = await loadGLTFModel(file);
+      const { scene: model, animations } = await loadGLTFModel(file);
       if (!sceneRef.current) return;
 
       // Remove previous model
@@ -79,7 +85,19 @@ export default function ModelViewer() {
       const uniqueMaterials = getUniqueModelMaterials(model);
 
       sceneRef.current.add(model);
+
+      //materials
       handleMaterialsFound(uniqueMaterials);
+
+      //animations
+      mixerRef.current = new AnimationMixer(model);
+      clipsRef.current = animations;
+      // Play first animation
+      if (animations.length > 0) {
+        const action = mixerRef.current.clipAction(animations[0]);
+        action.play();
+        setCurrentAction(action);
+      }
     } catch (error) {
       console.error("Error loading model:", error);
       toast.error("Failed to load model");
@@ -163,6 +181,9 @@ export default function ModelViewer() {
     // Animation loop (use setAnimationLoop instead of requestAnimationFrame)
     renderer.setAnimationLoop(() => {
       controls.update();
+      if (mixerRef.current) {
+        mixerRef.current.update(clockRef.current.getDelta());
+      }
       renderer.render(scene, camera);
     });
 
@@ -187,7 +208,7 @@ export default function ModelViewer() {
         mountNode.removeChild(renderer.domElement);
       }
     };
-  }, []);
+  }, [mixerRef]);
 
   // Update material settings when selectedMaterial or settings change
   useEffect(() => {

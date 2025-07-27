@@ -17,6 +17,7 @@ import {
   Texture,
 } from "three";
 import {
+  GLTF,
   GLTFLoader,
   OrbitControls,
   RGBELoader,
@@ -145,18 +146,16 @@ export const setupLighting = (scene: Scene): DirectionalLight => {
 /**
  * Loads a GLTF model from a File object and returns its scene group.
  * @param {File} file - The GLTF file to load.
- * @returns {Promise<Group<Object3DEventMap>>} The loaded model's scene group.
+ * @returns {Promise<GLTF>} The loaded model.
  * @throws Will throw if the model fails to load.
  */
-export const loadGLTFModel = async (
-  file: File
-): Promise<Group<Object3DEventMap>> => {
+export const loadGLTFModel = async (file: File): Promise<GLTF> => {
   const url = URL.createObjectURL(file);
   const loader = new GLTFLoader();
 
   try {
     const gltf = await loader.loadAsync(url);
-    return gltf.scene;
+    return gltf;
   } catch (error) {
     console.error("Error loading GLTF model:", error);
     throw error;
