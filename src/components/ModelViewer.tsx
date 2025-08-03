@@ -1,6 +1,7 @@
 import { DEFAULT_ENV_MAP } from "@/constants";
 import { useAppContext } from "@/context/AppContext";
 import { useLighting } from "@/hooks/useLighting";
+import { useMaterial } from "@/hooks/useMaterial";
 import {
   centerAndScaleModel,
   getUniqueModelMaterials,
@@ -17,8 +18,6 @@ import {
   AnimationMixer,
   Clock,
   Group,
-  MeshPhysicalMaterial,
-  MeshStandardMaterial,
   Scene,
   Texture,
   WebGLRenderer,
@@ -29,8 +28,6 @@ export default function ModelViewer() {
   const {
     isModelLoaded,
     setIsModelLoaded,
-    selectedMaterial,
-    materialSettings,
     handleMaterialsFound,
     mixerRef,
     clipsRef,
@@ -48,6 +45,9 @@ export default function ModelViewer() {
   // const lightRef = useRef<DirectionalLight | null>(null);
 
   const [isDragOver, setIsDragOver] = useState(false);
+
+  //material
+  useMaterial();
 
   //lighting
   useLighting(sceneRef, textureRef, skyboxRef);
@@ -202,27 +202,6 @@ export default function ModelViewer() {
       }
     };
   }, [mixerRef]);
-
-  // Update material settings when selectedMaterial or settings change
-  useEffect(() => {
-    if (!selectedMaterial) return;
-
-    if (
-      selectedMaterial instanceof MeshStandardMaterial ||
-      selectedMaterial instanceof MeshPhysicalMaterial
-    ) {
-      selectedMaterial.color.setHex(
-        parseInt(materialSettings.color.replace("#", ""), 16)
-      );
-      selectedMaterial.metalness = materialSettings.metalness;
-      selectedMaterial.roughness = materialSettings.roughness;
-      selectedMaterial.emissive.setHex(
-        parseInt(materialSettings.emissive.replace("#", ""), 16)
-      );
-      selectedMaterial.emissiveIntensity = materialSettings.emissiveIntensity;
-      selectedMaterial.needsUpdate = true;
-    }
-  }, [selectedMaterial, materialSettings]);
 
   return (
     <div
