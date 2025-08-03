@@ -29,6 +29,8 @@ export const Lighting = () => {
           customHDR: file,
           environmentMap: "custom",
           useSkybox: true,
+          groundedSkybox: false,
+          blurriness: 0,
         }));
       }
     };
@@ -96,6 +98,62 @@ export const Lighting = () => {
         )}
       </div>
 
+      {/* Skybox Toggle */}
+      <div className="flex items-center space-x-3 p-3 rounded-lg border bg-card">
+        <Checkbox
+          id="skybox"
+          checked={lightSettings.useSkybox}
+          onCheckedChange={(checked: boolean) => {
+            setLightSettings((prev) => ({
+              ...prev,
+              useSkybox: checked,
+              groundedSkybox: false,
+              blurriness: 0,
+            }));
+          }}
+        />
+        <div className="flex-1">
+          <Label
+            htmlFor="skybox"
+            className="text-sm font-medium cursor-pointer"
+          >
+            Use Environment as Skybox
+          </Label>
+          <p className="text-xs text-muted-foreground mt-1">
+            Display the environment map as the scene background
+          </p>
+        </div>
+      </div>
+
+      {/* Grounded Skybox Toggle */}
+      <div className="flex items-center space-x-3 p-3 rounded-lg border bg-card">
+        <Checkbox
+          id="grounded-skybox"
+          className="m-0"
+          checked={lightSettings.groundedSkybox}
+          onCheckedChange={(checked: boolean) => {
+            setLightSettings((prev) => ({
+              ...prev,
+              groundedSkybox: checked,
+              blurriness: 0,
+            }));
+          }}
+          disabled={!lightSettings.useSkybox}
+        />
+
+        <div className="flex-1">
+          <Label
+            htmlFor="grounded-skybox"
+            className="text-sm font-medium cursor-pointer"
+          >
+            Use Grounded Skybox
+          </Label>
+          <p className="text-xs text-muted-foreground mt-1">
+            Places your model on ground surface instead of floating in space
+          </p>
+        </div>
+      </div>
+
       {/* Blurriness Control */}
       <div className="space-y-3">
         <div className="flex justify-between items-center">
@@ -117,32 +175,8 @@ export const Lighting = () => {
           max={1}
           step={0.1}
           className="w-full"
+          disabled={lightSettings.groundedSkybox || !lightSettings.useSkybox}
         />
-      </div>
-
-      {/* Skybox Toggle */}
-      <div className="flex items-center space-x-3 p-3 rounded-lg border bg-card">
-        <Checkbox
-          id="skybox"
-          checked={lightSettings.useSkybox}
-          onCheckedChange={(checked: boolean) => {
-            setLightSettings((prev) => ({
-              ...prev,
-              useSkybox: checked,
-            }));
-          }}
-        />
-        <div className="flex-1">
-          <Label
-            htmlFor="skybox"
-            className="text-sm font-medium cursor-pointer"
-          >
-            Use Environment as Skybox
-          </Label>
-          <p className="text-xs text-muted-foreground mt-1">
-            Display the environment map as the scene background
-          </p>
-        </div>
       </div>
 
       {/* Reset Button */}

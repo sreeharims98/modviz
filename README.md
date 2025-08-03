@@ -1,36 +1,142 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ModViz
 
-## Getting Started
+A modern, open-source 3D model viewer and material editor built with Next.js, Three.js, and React. Upload GLB models and visualize them with real-time material editing capabilities.
 
-First, run the development server:
+![ModViz](https://img.shields.io/badge/ModViz-3D%20Viewer-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Next.js](https://img.shields.io/badge/Next.js-15.4.2-black)
+![Three.js](https://img.shields.io/badge/Three.js-0.178.0-orange)
+![React](https://img.shields.io/badge/React-19.1.0-blue)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## ✨ Features
+
+### 🎨 Material Editing
+
+- **Color Control**: Adjust material colors with real-time preview
+- **Metallic Properties**: Fine-tune metallic and roughness values
+- **Emission**: Add glowing effects to materials
+- **Material Selection**: Choose from multiple materials in your model
+
+### 🌍 Environment & Lighting
+
+- **HDR Environment Maps**: Upload custom HDR files for realistic lighting
+- **Environment Blur**: Adjust environment blurriness for different lighting effects
+- **Skybox Toggle**: Switch between HDR environment and skybox
+- **Dynamic Lighting**: Real-time lighting adjustments
+
+### 📁 Model Management
+
+- **GLB File Support**: Upload and view GLB/GLTF models
+- **Drag & Drop**: Intuitive drag-and-drop file upload
+- **Auto-centering**: Models are automatically centered and scaled
+- **Animation Support**: View and control model animations
+
+### 🎛️ User Interface
+
+- **Modern UI**: Clean, responsive interface built with Radix UI
+- **Real-time Preview**: See changes instantly in the 3D viewport
+- **Panel System**: Organized controls in collapsible panels
+- **Dark Theme**: Beautiful dark theme with gradient accents
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Installation
+
+1. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+2. **Run the development server**
+
+   ```bash
+   npm run dev
+   ```
+
+3. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## 📖 Usage
+
+### Uploading a Model
+
+1. **Drag and Drop**: Simply drag a GLB file onto the viewer area
+2. **Browse Files**: Click the upload area to browse and select a GLB file
+3. **Supported Formats**: GLB, GLTF files are supported
+
+### Editing Materials
+
+1. **Select Material**: Choose a material from the dropdown in the Materials panel
+2. **Adjust Properties**:
+   - **Color**: Use the color picker to change material color
+   - **Metallic**: Adjust the metallic value (0-1)
+   - **Roughness**: Control surface roughness (0-1)
+   - **Emission**: Add glowing effects with color and intensity
+
+### Environment Settings
+
+1. **Upload HDR**: Drag an HDR file onto the environment upload area
+2. **Adjust Blur**: Use the blur slider to control environment blurriness
+3. **Toggle Skybox**: Switch between HDR environment and skybox mode
+
+### Scene Controls
+
+- **Orbit**: Click and drag to rotate around the model
+- **Zoom**: Scroll to zoom in/out
+- **Pan**: Right-click and drag to pan the view
+
+## 🛠️ Technology Stack
+
+- **Frontend**: Next.js 15.4.2, React 19.1.0
+- **3D Graphics**: Three.js 0.178.0
+- **UI Components**: Radix UI
+- **Styling**: Tailwind CSS
+- **Language**: TypeScript
+- **Build Tool**: Turbopack
+
+## 📁 Project Structure
+
+```
+mod-viz/
+├── src/
+│   ├── app/                 # Next.js app directory
+│   ├── components/          # React components
+│   │   ├── accordions/      # Accordion components
+│   │   ├── panels/          # Control panels
+│   │   └── ui/              # UI components
+│   ├── context/             # React context
+│   ├── lib/                 # Utility libraries
+│   └── types/               # TypeScript types
+├── public/                  # Static assets
+└── package.json
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🤝 Contributing
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+We welcome contributions! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📝 License
 
-## Learn More
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-To learn more about Next.js, take a look at the following resources:
+## 🙏 Acknowledgments
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [Three.js](https://threejs.org/) - 3D graphics library
+- [Next.js](https://nextjs.org/) - React framework
+- [Radix UI](https://www.radix-ui.com/) - UI primitives
+- [shadcn/ui](https://ui.shadcn.com/) - Beautiful UI components
+- [Tailwind CSS](https://tailwindcss.com/) - CSS framework
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📞 Support
 
-## Deploy on Vercel
+If you have any questions or need help, please open an issue on GitHub.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**ModViz** - Visualize and edit 3D models with ease! 🎨✨

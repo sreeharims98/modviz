@@ -7,9 +7,9 @@ export interface MaterialProps {
 }
 
 export interface LightsProps {
-  intensity: number;
   environmentMap: string;
   blurriness: number;
+  groundedSkybox: boolean;
   useSkybox: boolean;
   customHDR: File | null;
 }

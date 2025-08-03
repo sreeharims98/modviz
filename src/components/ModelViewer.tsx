@@ -1,4 +1,6 @@
+import { DEFAULT_ENV_MAP } from "@/constants";
 import { useAppContext } from "@/context/AppContext";
+import { useLighting } from "@/hooks/useLighting";
 import {
   centerAndScaleModel,
   getUniqueModelMaterials,
@@ -7,10 +9,9 @@ import {
   initRenderer,
   initScene,
   loadGLTFModel,
-  setSceneEnvironment,
   setupEnvironment,
 } from "@/lib/threejs";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   AnimationMixer,
@@ -22,6 +23,7 @@ import {
   Texture,
   WebGLRenderer,
 } from "three";
+import { GroundedSkybox } from "three/examples/jsm/Addons.js";
 
 export default function ModelViewer() {
   const {
@@ -30,7 +32,6 @@ export default function ModelViewer() {
     selectedMaterial,
     materialSettings,
     handleMaterialsFound,
-    lightSettings,
     mixerRef,
     clipsRef,
     setCurrentAction,
@@ -41,26 +42,15 @@ export default function ModelViewer() {
   const rendererRef = useRef<WebGLRenderer | null>(null);
   const modelRef = useRef<Group | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const envTexture = useRef<Texture | null>(null);
   const clockRef = useRef<Clock>(new Clock());
+  const textureRef = useRef<Texture | null>(null);
+  const skyboxRef = useRef<GroundedSkybox | null>(null);
   // const lightRef = useRef<DirectionalLight | null>(null);
 
   const [isDragOver, setIsDragOver] = useState(false);
 
-  // load environment
-  const loadEnvironment = useCallback(
-    async (file: string | File) => {
-      if (!sceneRef.current) return;
-      const texture = await setupEnvironment(
-        file,
-        sceneRef.current,
-        lightSettings.blurriness,
-        lightSettings.useSkybox
-      );
-      envTexture.current = texture;
-    },
-    [lightSettings.blurriness, lightSettings.useSkybox]
-  );
+  //lighting
+  useLighting(sceneRef, textureRef, skyboxRef);
 
   const loadModel = async (file: File) => {
     try {
@@ -175,6 +165,9 @@ export default function ModelViewer() {
       mountNode.appendChild(renderer.domElement);
     }
 
+    //add environment map
+    setupEnvironment(DEFAULT_ENV_MAP, sceneRef.current, textureRef, skyboxRef);
+
     // Controls
     const controls = initOrbitControls(camera, renderer);
 
@@ -230,23 +223,6 @@ export default function ModelViewer() {
       selectedMaterial.needsUpdate = true;
     }
   }, [selectedMaterial, materialSettings]);
-
-  //Update environment settings
-  useEffect(() => {
-    if (!sceneRef.current || !envTexture.current) return;
-    setSceneEnvironment(
-      sceneRef.current,
-      envTexture.current,
-      lightSettings.blurriness,
-      lightSettings.useSkybox
-    );
-  }, [lightSettings.blurriness, lightSettings.useSkybox]);
-
-  //Update environment
-  useEffect(() => {
-    const file = lightSettings.customHDR ?? lightSettings.environmentMap;
-    loadEnvironment(file);
-  }, [lightSettings.customHDR, lightSettings.environmentMap, loadEnvironment]);
 
   return (
     <div

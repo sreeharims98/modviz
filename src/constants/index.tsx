@@ -13,10 +13,12 @@ export const DEFAULT_MATERIAL_SETTINGS: MaterialProps = {
   emissiveIntensity: 0,
 };
 
+export const DEFAULT_ENV_MAP = "./blocky_photo_studio_1k.hdr";
+
 export const DEFAULT_LIGHT_SETTINGS = {
-  intensity: 2.0,
-  environmentMap: "./blocky_photo_studio_1k.hdr",
+  environmentMap: DEFAULT_ENV_MAP,
   blurriness: 1.0,
+  groundedSkybox: false,
   useSkybox: true,
   customHDR: null,
 };
@@ -24,18 +26,8 @@ export const DEFAULT_LIGHT_SETTINGS = {
 export const ENV_MAPS = [
   // { name: "None", value: "none", style: "bg-black" },
   {
-    name: "Neutral",
-    value: "./blocky_photo_studio_1k.hdr",
+    name: "Studio",
+    value: DEFAULT_ENV_MAP,
     style: "bg-gradient-to-r from-blue-200 to-blue-400",
   },
-  // {
-  //   name: "Studio",
-  //   value: "studio",
-  //   style: "bg-gradient-to-r from-gray-200 to-white",
-  // },
-  // {
-  //   name: "Outdoor",
-  //   value: "outdoor",
-  //   style: "bg-gradient-to-r from-green-300 to-blue-300",
-  // },
 ];

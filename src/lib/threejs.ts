@@ -1,4 +1,5 @@
 import { DEFAULT_LIGHT_SETTINGS } from "@/constants";
+import { RefObject } from "react";
 import {
   ACESFilmicToneMapping,
   Box3,
@@ -19,6 +20,7 @@ import {
 import {
   GLTF,
   GLTFLoader,
+  GroundedSkybox,
   OrbitControls,
   RGBELoader,
 } from "three/examples/jsm/Addons.js";
@@ -80,37 +82,33 @@ export const initOrbitControls = (
 };
 
 /**
- * Applies environment map to a given scene
- */
-export const setSceneEnvironment = (
-  scene: Scene,
-  texture: Texture,
-  blurriness: number,
-  useSkybox: boolean
-) => {
-  texture.mapping = EquirectangularReflectionMapping;
-  scene.environment = texture;
-  scene.background = useSkybox ? texture : new Color(0xffffff);
-  scene.backgroundBlurriness = blurriness;
-};
-
-/**
  * Loads HDR environment texture and applies it to the scene
  */
 export const setupEnvironment = async (
   file: string | File,
   scene: Scene,
-  blurriness: number = DEFAULT_LIGHT_SETTINGS.blurriness,
-  useSkybox: boolean = DEFAULT_LIGHT_SETTINGS.useSkybox
-): Promise<Texture> => {
+  textureRef: RefObject<Texture | null>,
+  skyboxRef: RefObject<GroundedSkybox | null>,
+  blurriness: number = DEFAULT_LIGHT_SETTINGS.blurriness
+) => {
   const rgbeLoader = new RGBELoader();
   let url = "";
 
   try {
     url = typeof file === "string" ? file : URL.createObjectURL(file);
     const texture = await rgbeLoader.loadAsync(url);
-    setSceneEnvironment(scene, texture, blurriness, useSkybox);
-    return texture;
+    texture.mapping = EquirectangularReflectionMapping;
+
+    scene.environment = texture;
+    scene.background = texture;
+    scene.backgroundBlurriness = blurriness;
+
+    textureRef.current = texture;
+
+    //grounded skybox
+    const skybox = new GroundedSkybox(texture, 15, 100);
+    skybox.position.y = 15 - 0.01;
+    skyboxRef.current = skybox;
   } catch (error) {
     console.error(`Error loading HDR environment: ${file}`, error);
     throw error;
