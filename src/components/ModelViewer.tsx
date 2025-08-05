@@ -1,207 +1,32 @@
-import { DEFAULT_ENV_MAP } from "@/constants";
 import { useAppContext } from "@/context/AppContext";
+import { useFileHandler } from "@/hooks/useFileHandler";
 import { useLighting } from "@/hooks/useLighting";
 import { useMaterial } from "@/hooks/useMaterial";
-import {
-  centerAndScaleModel,
-  getUniqueModelMaterials,
-  initCamera,
-  initOrbitControls,
-  initRenderer,
-  initScene,
-  loadGLTFModel,
-  setupEnvironment,
-} from "@/lib/threejs";
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import {
-  AnimationMixer,
-  Clock,
-  Group,
-  Scene,
-  Texture,
-  WebGLRenderer,
-} from "three";
-import { GroundedSkybox } from "three/examples/jsm/Addons.js";
+import { useScene } from "@/hooks/useScene";
+import { LoadingOverlay } from "./LoadingOverlay";
 
 export default function ModelViewer() {
+  const { isModelLoaded, isLoading } = useAppContext();
+
+  //scene
+  const { mountRef, sceneRef, textureRef, skyboxRef } = useScene();
+
+  //file handler
   const {
-    isModelLoaded,
-    setIsModelLoaded,
-    handleMaterialsFound,
-    mixerRef,
-    clipsRef,
-    setCurrentAction,
-  } = useAppContext();
-
-  const mountRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<Scene | null>(null);
-  const rendererRef = useRef<WebGLRenderer | null>(null);
-  const modelRef = useRef<Group | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const clockRef = useRef<Clock>(new Clock());
-  const textureRef = useRef<Texture | null>(null);
-  const skyboxRef = useRef<GroundedSkybox | null>(null);
-  // const lightRef = useRef<DirectionalLight | null>(null);
-
-  const [isDragOver, setIsDragOver] = useState(false);
+    isDragOver,
+    fileInputRef,
+    handleBrowseClick,
+    handleDragLeave,
+    handleDragOver,
+    handleDrop,
+    handleFileChange,
+  } = useFileHandler({ sceneRef });
 
   //material
   useMaterial();
 
   //lighting
   useLighting(sceneRef, textureRef, skyboxRef);
-
-  const loadModel = async (file: File) => {
-    try {
-      const { scene: model, animations } = await loadGLTFModel(file);
-      if (!sceneRef.current) return;
-
-      // Remove previous model
-      if (modelRef.current) {
-        sceneRef.current.remove(modelRef.current);
-      }
-
-      modelRef.current = model;
-      setIsModelLoaded(true);
-
-      // Center and scale model, positioning it above the floor
-      centerAndScaleModel(model);
-
-      // Enable shadows
-      // enableModelShadows(model);
-
-      // Extract unique materials from model
-      const uniqueMaterials = getUniqueModelMaterials(model);
-
-      sceneRef.current.add(model);
-
-      //materials
-      handleMaterialsFound(uniqueMaterials);
-
-      //animations
-      mixerRef.current = new AnimationMixer(model);
-      clipsRef.current = animations;
-      // Play first animation
-      if (animations.length > 0) {
-        const action = mixerRef.current.clipAction(animations[0]);
-        action.play();
-        setCurrentAction(action);
-      }
-    } catch (error) {
-      console.error("Error loading model:", error);
-      toast.error("Failed to load model");
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-
-    const files = Array.from(e.dataTransfer.files);
-    const glbFile = files.find(
-      (file) =>
-        file.name.toLowerCase().endsWith(".glb") ||
-        file.name.toLowerCase().endsWith(".gltf")
-    );
-
-    if (glbFile) {
-      loadModel(glbFile);
-    } else {
-      toast.error("Please drop a GLB or GLTF file");
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-  };
-
-  const handleBrowseClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    const glbFile = Array.from(files).find(
-      (file) =>
-        file.name.toLowerCase().endsWith(".glb") ||
-        file.name.toLowerCase().endsWith(".gltf")
-    );
-    if (glbFile) {
-      loadModel(glbFile);
-    } else {
-      toast.error("Please select a GLB or GLTF file");
-    }
-    // Reset input so same file can be selected again
-    e.target.value = "";
-  };
-
-  // Initialize scene, camera, renderer, and controls
-  useEffect(() => {
-    if (!mountRef.current) return;
-
-    const mountNode = mountRef.current;
-
-    // Scene
-    const scene = initScene();
-    sceneRef.current = scene;
-
-    // Camera
-    const camera = initCamera(mountNode);
-
-    // Renderer
-    const renderer = initRenderer(mountNode);
-    rendererRef.current = renderer;
-
-    // Avoid duplicate append in StrictMode
-    if (!mountNode.contains(renderer.domElement)) {
-      mountNode.appendChild(renderer.domElement);
-    }
-
-    //add environment map
-    setupEnvironment(DEFAULT_ENV_MAP, sceneRef.current, textureRef, skyboxRef);
-
-    // Controls
-    const controls = initOrbitControls(camera, renderer);
-
-    // Animation loop (use setAnimationLoop instead of requestAnimationFrame)
-    renderer.setAnimationLoop(() => {
-      controls.update();
-      if (mixerRef.current) {
-        mixerRef.current.update(clockRef.current.getDelta());
-      }
-      renderer.render(scene, camera);
-    });
-
-    // Resize handling
-    const handleResize = () => {
-      const width = mountNode.clientWidth;
-      const height = mountNode.clientHeight;
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
-      renderer.setSize(width, height);
-    };
-    window.addEventListener("resize", handleResize);
-    handleResize(); // initial size sync
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      renderer.setAnimationLoop(null); // stop rendering
-      controls.dispose();
-      renderer.dispose();
-      // Remove renderer DOM if still present
-      if (renderer.domElement.parentNode === mountNode) {
-        mountNode.removeChild(renderer.domElement);
-      }
-    };
-  }, [mixerRef]);
 
   return (
     <div
@@ -242,6 +67,9 @@ export default function ModelViewer() {
           </div>
         </div>
       )}
+
+      {/* loading progress */}
+      {isLoading && <LoadingOverlay />}
     </div>
   );
 }

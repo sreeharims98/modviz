@@ -14,6 +14,11 @@ interface AppContextType {
   //scene
   isModelLoaded: boolean;
   setIsModelLoaded: (isModelLoaded: boolean) => void;
+  //loading progress
+  loadingProgress: number;
+  setLoadingProgress: (progress: number) => void;
+  isLoading: boolean;
+  setIsLoading: (isLoading: boolean) => void;
   //materials
   materials: Material[];
   selectedMaterial: Material | null;
@@ -43,6 +48,10 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   //scene
   const [isModelLoaded, setIsModelLoaded] = useState(false);
+
+  //loading progress
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   //materials
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -130,6 +139,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         //scene
         isModelLoaded,
         setIsModelLoaded,
+        //loading progress
+        loadingProgress,
+        setLoadingProgress,
+        isLoading,
+        setIsLoading,
         //materials
         materials,
         selectedMaterial,

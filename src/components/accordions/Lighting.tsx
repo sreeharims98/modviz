@@ -129,7 +129,6 @@ export const Lighting = () => {
       <div className="flex items-center space-x-3 p-3 rounded-lg border bg-card">
         <Checkbox
           id="grounded-skybox"
-          className="m-0"
           checked={lightSettings.groundedSkybox}
           onCheckedChange={(checked: boolean) => {
             setLightSettings((prev) => ({
@@ -140,7 +139,6 @@ export const Lighting = () => {
           }}
           disabled={!lightSettings.useSkybox}
         />
-
         <div className="flex-1">
           <Label
             htmlFor="grounded-skybox"
