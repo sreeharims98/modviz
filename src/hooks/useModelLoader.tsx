@@ -73,11 +73,11 @@ export const useModelLoader = ({
       mixerRef.current = new AnimationMixer(model);
       clipsRef.current = animations;
       // Play first animation
-      if (animations.length > 0) {
-        const action = mixerRef.current.clipAction(animations[0]);
-        action.play();
-        setCurrentAction(action);
-      }
+      // if (animations.length > 0) {
+      //   const action = mixerRef.current.clipAction(animations[0]);
+      //   action.play();
+      //   setCurrentAction(action);
+      // }
     } catch (error) {
       console.error("Error loading model:", error);
       toast.error("Failed to load model");
