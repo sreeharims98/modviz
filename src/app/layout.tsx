@@ -19,7 +19,6 @@ export const metadata: Metadata = {
     "Web-based 3D model viewer and editor for easy visualization and material customization.",
 };
 
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,6 +26,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* react scan script*/}
+        {/* <script
+          crossOrigin="anonymous"
+          src="//unpkg.com/react-scan/dist/auto.global.js"
+        /> */}
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

@@ -1,9 +1,9 @@
-import { useAppContext } from "@/context/AppContext";
 import {
   centerAndScaleModel,
   getUniqueModelMaterials,
   loadGLTFModel,
 } from "@/lib/threejs";
+import { useAppStore } from "@/store/useAppStore";
 import { RefObject } from "react";
 import { toast } from "sonner";
 import { AnimationMixer, Group, Object3DEventMap, Scene } from "three";
@@ -11,19 +11,19 @@ import { AnimationMixer, Group, Object3DEventMap, Scene } from "three";
 export const useModelLoader = ({
   sceneRef,
   modelRef,
+  mixerRef,
 }: {
   sceneRef: RefObject<Scene | null>;
   modelRef: RefObject<Group<Object3DEventMap> | null>;
+  mixerRef: RefObject<AnimationMixer | null>;
 }) => {
-  const {
-    setIsModelLoaded,
-    setLoadingProgress,
-    setIsLoading,
-    handleMaterialsFound,
-    mixerRef,
-    clipsRef,
-    setCurrentAction,
-  } = useAppContext();
+  const setIsModelLoaded = useAppStore((state) => state.setIsModelLoaded);
+  const setLoadingProgress = useAppStore((state) => state.setLoadingProgress);
+  const setIsLoading = useAppStore((state) => state.setIsLoading);
+  const handleMaterialsFound = useAppStore(
+    (state) => state.handleMaterialsFound
+  );
+  const setClips = useAppStore((state) => state.setClips);
 
   const loadModel = async (file: File) => {
     try {
@@ -71,7 +71,8 @@ export const useModelLoader = ({
 
       //animations
       mixerRef.current = new AnimationMixer(model);
-      clipsRef.current = animations;
+
+      setClips(animations);
       // Play first animation
       // if (animations.length > 0) {
       //   const action = mixerRef.current.clipAction(animations[0]);

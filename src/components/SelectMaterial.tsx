@@ -5,7 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAppContext } from "@/context/AppContext";
+import { useAppStore } from "@/store/useAppStore";
 import {
   Material,
   MeshBasicMaterial,
@@ -16,7 +16,11 @@ import {
 } from "three";
 
 export function SelectMaterial() {
-  const { materials, selectedMaterial, handleMaterialSelect } = useAppContext();
+  const materials = useAppStore((state) => state.materials);
+  const selectedMaterial = useAppStore((state) => state.selectedMaterial);
+  const handleMaterialSelect = useAppStore(
+    (state) => state.handleMaterialSelect
+  );
 
   const getMaterialName = (material: Material, index: number): string => {
     return material.name || `Material ${index + 1}`;

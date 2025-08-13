@@ -1,4 +1,3 @@
-import { useAppContext } from "@/context/AppContext";
 import { Slider } from "@/components/ui/slider";
 import {
   Select,
@@ -12,10 +11,12 @@ import { Label } from "@/components/ui/label";
 import { Button } from "../ui/button";
 import { Image as ImageIco, Upload } from "lucide-react";
 import { ENV_MAPS } from "@/constants";
+import { useAppStore } from "@/store/useAppStore";
 
 export const Lighting = () => {
-  const { lightSettings, setLightSettings, resetLightSettings } =
-    useAppContext();
+  const lightSettings = useAppStore((state) => state.lightSettings);
+  const setLightSettings = useAppStore((state) => state.setLightSettings);
+  const resetLightSettings = useAppStore((state) => state.resetLightSettings);
 
   const handleHDRUpload = () => {
     const input = document.createElement("input");
@@ -24,14 +25,14 @@ export const Lighting = () => {
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
-        setLightSettings((prev) => ({
-          ...prev,
+        setLightSettings({
+          ...lightSettings,
           customHDR: file,
           environmentMap: "custom",
           useSkybox: true,
           groundedSkybox: false,
           blurriness: 0,
-        }));
+        });
       }
     };
     input.click();
@@ -47,11 +48,11 @@ export const Lighting = () => {
           <Select
             value={lightSettings.environmentMap}
             onValueChange={(value) =>
-              setLightSettings((prev) => ({
-                ...prev,
+              setLightSettings({
+                ...lightSettings,
                 environmentMap: value,
                 customHDR: null,
-              }))
+              })
             }
           >
             <SelectTrigger className="flex-1">
@@ -104,12 +105,12 @@ export const Lighting = () => {
           id="skybox"
           checked={lightSettings.useSkybox}
           onCheckedChange={(checked: boolean) => {
-            setLightSettings((prev) => ({
-              ...prev,
+            setLightSettings({
+              ...lightSettings,
               useSkybox: checked,
               groundedSkybox: false,
               blurriness: 0,
-            }));
+            });
           }}
         />
         <div className="flex-1">
@@ -131,11 +132,11 @@ export const Lighting = () => {
           id="grounded-skybox"
           checked={lightSettings.groundedSkybox}
           onCheckedChange={(checked: boolean) => {
-            setLightSettings((prev) => ({
-              ...prev,
+            setLightSettings({
+              ...lightSettings,
               groundedSkybox: checked,
               blurriness: 0,
-            }));
+            });
           }}
           disabled={!lightSettings.useSkybox}
         />
@@ -164,10 +165,10 @@ export const Lighting = () => {
           value={[lightSettings.blurriness]}
           onValueChange={(value) => {
             const blurValue = value[0];
-            setLightSettings((prev) => ({
-              ...prev,
+            setLightSettings({
+              ...lightSettings,
               blurriness: blurValue,
-            }));
+            });
           }}
           min={0}
           max={1}

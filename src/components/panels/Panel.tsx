@@ -2,12 +2,12 @@ import { MaterialPanel } from "./MaterialPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TABS } from "@/constants";
 import { ScenePanel } from "./ScenePanel";
-import { useAppContext } from "@/context/AppContext";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { Button } from "../ui/button";
+import { useAppStore } from "@/store/useAppStore";
 
 export const Panel = () => {
-  const { isModelLoaded } = useAppContext();
+  const isModelLoaded = useAppStore((state) => state.isModelLoaded);
 
   return (
     <div className="w-[300px] flex flex-col p-2 bg-panel border-l border-panel-border">

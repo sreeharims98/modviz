@@ -1,5 +1,5 @@
-import { useAppContext } from "@/context/AppContext";
 import { setupEnvironment } from "@/lib/threejs";
+import { useAppStore } from "@/store/useAppStore";
 import { RefObject, useEffect } from "react";
 import { Scene, Texture } from "three";
 import { GroundedSkybox } from "three/examples/jsm/Addons.js";
@@ -9,22 +9,15 @@ export const useLighting = (
   textureRef: RefObject<Texture | null>,
   skyboxRef: RefObject<GroundedSkybox | null>
 ) => {
-  const { lightSettings } = useAppContext();
+  const lightSettings = useAppStore((state) => state.lightSettings);
 
   //Update environment
   useEffect(() => {
     if (!sceneRef.current || !textureRef.current || !skyboxRef.current) return;
     const file = lightSettings.customHDR ?? lightSettings.environmentMap;
     if (!file) return;
-    setupEnvironment(
-      file,
-      sceneRef.current,
-      textureRef,
-      skyboxRef,
-      lightSettings.blurriness
-    );
+    setupEnvironment(file, sceneRef.current, textureRef, skyboxRef, 0);
   }, [
-    lightSettings.blurriness,
     lightSettings.customHDR,
     lightSettings.environmentMap,
     sceneRef,
@@ -46,12 +39,6 @@ export const useLighting = (
     }
   }, [lightSettings.useSkybox, sceneRef]);
 
-  //blurriness
-  useEffect(() => {
-    if (!sceneRef.current) return;
-    sceneRef.current.backgroundBlurriness = lightSettings.blurriness;
-  }, [lightSettings.blurriness, sceneRef]);
-
   //grounded skybox
   useEffect(() => {
     if (!skyboxRef.current || !sceneRef.current) return;
@@ -64,4 +51,10 @@ export const useLighting = (
       sceneRef.current.remove(skyboxRef.current);
     }
   }, [lightSettings.groundedSkybox, sceneRef, skyboxRef]);
+
+  //blurriness
+  useEffect(() => {
+    if (!sceneRef.current) return;
+    sceneRef.current.backgroundBlurriness = lightSettings.blurriness;
+  }, [lightSettings.blurriness, sceneRef]);
 };

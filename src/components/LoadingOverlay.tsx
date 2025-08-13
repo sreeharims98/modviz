@@ -1,8 +1,8 @@
-import { useAppContext } from "@/context/AppContext";
 import { Progress } from "@/components/ui/progress";
+import { useAppStore } from "@/store/useAppStore";
 
 export const LoadingOverlay = () => {
-  const { loadingProgress } = useAppContext();
+  const loadingProgress = useAppStore((state) => state.loadingProgress);
 
   return (
     <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">

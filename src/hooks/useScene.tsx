@@ -1,5 +1,4 @@
 import { DEFAULT_ENV_MAP } from "@/constants";
-import { useAppContext } from "@/context/AppContext";
 import {
   initCamera,
   initOrbitControls,
@@ -8,18 +7,17 @@ import {
   setupEnvironment,
 } from "@/lib/threejs";
 import { useEffect, useRef } from "react";
-import { Clock, Scene, Texture, WebGLRenderer } from "three";
+import { AnimationMixer, Clock, Scene, Texture, WebGLRenderer } from "three";
 import { GroundedSkybox } from "three/examples/jsm/Addons.js";
 
 export const useScene = () => {
-  const { mixerRef } = useAppContext();
-
   const mountRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<Scene | null>(null);
   const rendererRef = useRef<WebGLRenderer | null>(null);
   const clockRef = useRef<Clock>(new Clock());
   const textureRef = useRef<Texture | null>(null);
   const skyboxRef = useRef<GroundedSkybox | null>(null);
+  const mixerRef = useRef<AnimationMixer | null>(null);
 
   // Initialize scene, camera, renderer, and controls
   useEffect(() => {
@@ -79,7 +77,7 @@ export const useScene = () => {
         mountNode.removeChild(renderer.domElement);
       }
     };
-  }, [mixerRef]);
+  }, []);
 
   return {
     clockRef,
@@ -88,5 +86,6 @@ export const useScene = () => {
     sceneRef,
     skyboxRef,
     textureRef,
+    mixerRef,
   };
 };

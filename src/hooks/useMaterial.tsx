@@ -1,9 +1,10 @@
-import { useAppContext } from "@/context/AppContext";
+import { useAppStore } from "@/store/useAppStore";
 import { useEffect, useMemo } from "react";
 import { MeshPhysicalMaterial, MeshStandardMaterial } from "three";
 
 export const useMaterial = () => {
-  const { selectedMaterial, materialSettings } = useAppContext();
+  const selectedMaterial = useAppStore((state) => state.selectedMaterial);
+  const materialSettings = useAppStore((state) => state.materialSettings);
 
   // Memoize color parsing to avoid expensive operations on every render
   const colorHex = useMemo(() => {

@@ -6,31 +6,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAppContext } from "@/context/AppContext";
+import { useAppStore } from "@/store/useAppStore";
 
 export const Animation = () => {
-  const { clipsRef, currentAction, setCurrentAction, mixerRef } =
-    useAppContext();
-
-  const animClips = useMemo(
-    () => clipsRef.current.map((clip) => clip.name),
-    [clipsRef]
+  const clips = useAppStore((state) => state.clips);
+  const setSelectedAnimation = useAppStore(
+    (state) => state.setSelectedAnimation
   );
+  const currentAction = useAppStore((state) => state.currentAction);
+
+  const animClips = useMemo(() => clips.map((clip) => clip.name), [clips]);
 
   const handleAnimationChange = (selectedName: string) => {
     // Stop current action
     if (currentAction) {
       currentAction.stop();
     }
-    const clip = clipsRef.current.find((c) => c.name === selectedName);
-
-    if (clip && mixerRef.current) {
-      const newAction = mixerRef.current.clipAction(clip);
-      if (newAction) {
-        newAction.reset().play();
-        setCurrentAction(newAction);
-      }
-    }
+    setSelectedAnimation(selectedName);
   };
 
   return (

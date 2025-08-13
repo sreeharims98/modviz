@@ -1,12 +1,14 @@
 import { RefObject, useRef, useState } from "react";
 import { useModelLoader } from "./useModelLoader";
 import { toast } from "sonner";
-import { Group, Scene } from "three";
+import { AnimationMixer, Group, Scene } from "three";
 
 export const useFileHandler = ({
   sceneRef,
+  mixerRef,
 }: {
   sceneRef: RefObject<Scene | null>;
+  mixerRef: RefObject<AnimationMixer | null>;
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -14,7 +16,7 @@ export const useFileHandler = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   //model loader hook
-  const { loadModel } = useModelLoader({ sceneRef, modelRef });
+  const { loadModel } = useModelLoader({ sceneRef, modelRef, mixerRef });
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -73,5 +75,6 @@ export const useFileHandler = ({
     handleDragLeave,
     handleBrowseClick,
     handleFileChange,
+    mixerRef,
   };
 };

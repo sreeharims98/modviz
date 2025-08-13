@@ -1,4 +1,3 @@
-import { useAppContext } from "@/context/AppContext";
 import { EmptyMessage } from "../EmptyMessage";
 import {
   Accordion,
@@ -8,9 +7,11 @@ import {
 } from "@/components/ui/accordion";
 import { Lighting } from "../accordions/Lighting";
 import { Animation } from "../accordions/Animation";
+import { useAppStore } from "@/store/useAppStore";
 
 export const ScenePanel = () => {
-  const { isModelLoaded, clipsRef } = useAppContext();
+  const isModelLoaded = useAppStore((state) => state.isModelLoaded);
+  const clips = useAppStore((state) => state.clips);
 
   return (
     <div className="w-full h-full overflow-y-auto">
@@ -24,12 +25,9 @@ export const ScenePanel = () => {
               <Lighting />
             </AccordionContent>
           </AccordionItem>
-          <AccordionItem
-            value="animations"
-            disabled={clipsRef.current.length === 0}
-          >
+          <AccordionItem value="animations" disabled={clips.length === 0}>
             <AccordionTrigger>Animations</AccordionTrigger>
-            {clipsRef.current.length > 0 && (
+            {clips.length > 0 && (
               <AccordionContent>
                 <Animation />
               </AccordionContent>

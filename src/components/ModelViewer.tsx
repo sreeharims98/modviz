@@ -1,15 +1,17 @@
-import { useAppContext } from "@/context/AppContext";
 import { useFileHandler } from "@/hooks/useFileHandler";
 import { useLighting } from "@/hooks/useLighting";
 import { useMaterial } from "@/hooks/useMaterial";
 import { useScene } from "@/hooks/useScene";
 import { LoadingOverlay } from "./LoadingOverlay";
+import { useAppStore } from "@/store/useAppStore";
+import { useAnimation } from "@/hooks/useAnimation";
 
 export default function ModelViewer() {
-  const { isModelLoaded, isLoading } = useAppContext();
+  const isModelLoaded = useAppStore((state) => state.isModelLoaded);
+  const isLoading = useAppStore((state) => state.isLoading);
 
   //scene
-  const { mountRef, sceneRef, textureRef, skyboxRef } = useScene();
+  const { mountRef, sceneRef, textureRef, skyboxRef, mixerRef } = useScene();
 
   //file handler
   const {
@@ -20,13 +22,16 @@ export default function ModelViewer() {
     handleDragOver,
     handleDrop,
     handleFileChange,
-  } = useFileHandler({ sceneRef });
+  } = useFileHandler({ sceneRef, mixerRef });
 
   //material
   useMaterial();
 
   //lighting
   useLighting(sceneRef, textureRef, skyboxRef);
+
+  //animation
+  useAnimation({ mixerRef });
 
   return (
     <div

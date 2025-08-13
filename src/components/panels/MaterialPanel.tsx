@@ -3,17 +3,19 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Material, MeshPhysicalMaterial, MeshStandardMaterial } from "three";
 import { SelectMaterial } from "../SelectMaterial";
-import { useAppContext } from "@/context/AppContext";
 import { EmptyMessage } from "../EmptyMessage";
+import { useAppStore } from "@/store/useAppStore";
 
 export const MaterialPanel = () => {
-  const {
-    materials,
-    selectedMaterial,
-    materialSettings,
-    handleMaterialSettingsChange,
-    resetMaterialSettings,
-  } = useAppContext();
+  const materials = useAppStore((state) => state.materials);
+  const selectedMaterial = useAppStore((state) => state.selectedMaterial);
+  const materialSettings = useAppStore((state) => state.materialSettings);
+  const handleMaterialSettingsChange = useAppStore(
+    (state) => state.handleMaterialSettingsChange
+  );
+  const resetMaterialSettings = useAppStore(
+    (state) => state.resetMaterialSettings
+  );
 
   const canEditMaterial = (material: Material): boolean => {
     return (
