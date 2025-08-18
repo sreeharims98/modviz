@@ -2,9 +2,8 @@ import { MaterialPanel } from "./MaterialPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TABS } from "@/constants";
 import { ScenePanel } from "./ScenePanel";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import { Button } from "../ui/button";
 import { useAppStore } from "@/store/useAppStore";
+import AuthButton from "../AuthButton";
 
 export const Panel = () => {
   const isModelLoaded = useAppStore((state) => state.isModelLoaded);
@@ -15,14 +14,7 @@ export const Panel = () => {
         <span className="font-bold text-3xl bg-gradient-to-r from-blue-900 via-purple-900 to-pink-900 bg-clip-text text-transparent drop-shadow">
           ModViz
         </span>
-        <SignedOut>
-          <SignInButton mode="modal">
-            <Button>Sign in</Button>
-          </SignInButton>
-        </SignedOut>
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
+        <AuthButton />
       </div>
       <Tabs defaultValue={TABS.MATERIALS} className="w-full flex-1">
         <TabsList>
