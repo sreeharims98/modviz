@@ -3,6 +3,7 @@ import { MaterialProps } from "@/types";
 export const TABS = {
   MATERIALS: "Materials",
   SCENE: "Scene",
+  SHARE: "Share",
 };
 
 export const DEFAULT_MATERIAL_SETTINGS: MaterialProps = {

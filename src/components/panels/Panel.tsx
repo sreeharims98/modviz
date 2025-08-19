@@ -4,6 +4,7 @@ import { TABS } from "@/constants";
 import { ScenePanel } from "./ScenePanel";
 import { useAppStore } from "@/store/useAppStore";
 import AuthButton from "../AuthButton";
+import { SharePanel } from "./SharePanel";
 
 export const Panel = () => {
   const isModelLoaded = useAppStore((state) => state.isModelLoaded);
@@ -29,6 +30,9 @@ export const Panel = () => {
         </TabsContent>
         <TabsContent value={TABS.SCENE}>
           <ScenePanel />
+        </TabsContent>
+        <TabsContent value={TABS.SHARE}>
+          <SharePanel />
         </TabsContent>
       </Tabs>
     </div>

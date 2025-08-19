@@ -24,11 +24,15 @@ export const useModelLoader = ({
     (state) => state.handleMaterialsFound
   );
   const setClips = useAppStore((state) => state.setClips);
+  const setModelFile = useAppStore((state) => state.setModelFile);
 
   const loadModel = async (file: File) => {
     try {
       setIsLoading(true);
       setLoadingProgress(0);
+
+      // Set model file in the store
+      setModelFile(file);
 
       const { scene: model, animations } = await loadGLTFModel(
         file,

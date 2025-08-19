@@ -38,8 +38,6 @@ export default function AuthButton() {
     supabase.auth.signOut();
   };
 
-  console.log("user", user);
-
   return (
     <>
       {user ? (

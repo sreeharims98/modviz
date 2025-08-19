@@ -11,10 +11,12 @@ import { DEFAULT_LIGHT_SETTINGS, DEFAULT_MATERIAL_SETTINGS } from "@/constants";
 
 interface AppState {
   // Scene
-  isModelLoaded: boolean;
-  setIsModelLoaded: (value: boolean) => void;
+  modelFile: File | null;
+  setModelFile: (file: File | null) => void;
 
   // Loading progress
+  isModelLoaded: boolean;
+  setIsModelLoaded: (value: boolean) => void;
   loadingProgress: number;
   setLoadingProgress: (value: number) => void;
   isLoading: boolean;
@@ -48,6 +50,9 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>()((set, get) => ({
+  // Scene
+  modelFile: null,
+  setModelFile: (file) => set({ modelFile: file }),
   // Loading progress
   isModelLoaded: false,
   setIsModelLoaded: (value) => set({ isModelLoaded: value }),
