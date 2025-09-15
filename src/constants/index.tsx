@@ -32,3 +32,5 @@ export const ENV_MAPS = [
     style: "bg-gradient-to-r from-blue-200 to-blue-400",
   },
 ];
+
+export const SUPABASE_STORAGE_BUCKET_MODELS = "models";

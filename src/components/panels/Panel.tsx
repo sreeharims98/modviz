@@ -17,7 +17,7 @@ export const Panel = () => {
         </span>
         <AuthButton />
       </div>
-      <Tabs defaultValue={TABS.MATERIALS} className="w-full flex-1">
+      <Tabs defaultValue={TABS.SHARE} className="w-full flex-1">
         <TabsList>
           {Object.values(TABS).map((tab) => (
             <TabsTrigger key={tab} value={tab} disabled={!isModelLoaded}>
