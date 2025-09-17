@@ -3,7 +3,7 @@ import { RefObject } from "react";
 import {
   ACESFilmicToneMapping,
   Box3,
-  Color,
+  // Color,
   DirectionalLight,
   EquirectangularReflectionMapping,
   Group,

@@ -34,3 +34,4 @@ export const ENV_MAPS = [
 ];
 
 export const SUPABASE_STORAGE_BUCKET_MODELS = "models";
+export const SUPABASE_TABLE_USER_SCENE = "user_scene";

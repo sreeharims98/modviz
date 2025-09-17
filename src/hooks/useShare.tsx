@@ -1,25 +1,26 @@
-import { SUPABASE_STORAGE_BUCKET_MODELS } from "@/constants";
+import {
+  SUPABASE_STORAGE_BUCKET_MODELS,
+  SUPABASE_TABLE_USER_SCENE,
+} from "@/constants";
 import { useAppStore } from "@/store/useAppStore";
 import { createClient } from "@/utils/supabase/client";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useGetUser } from "./useGetUser";
+import { UserSceneProps } from "@/types";
 
 export const useShare = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [shareUrl, setShareUrl] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modelUrls, setModelUrls] = useState<string[]>([]);
-  const [loadingModelUrls, setLoadingModelUrls] = useState(true);
+  const [userScenes, setUserScenes] = useState<UserSceneProps[]>([]);
+  const [loadingUserScenes, setLoadingUserScenes] = useState(true);
 
   const modelFile = useAppStore((state) => state.modelFile);
 
   const supabase = createClient();
 
-  const getUserId = useCallback(async () => {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData.user?.id ?? null;
-    return userId;
-  }, [supabase.auth]);
+  const { user } = useGetUser();
 
   const generateShareLink = async () => {
     if (!modelFile) {
@@ -30,21 +31,46 @@ export const useShare = () => {
     try {
       setIsUploading(true);
 
-      const userId = await getUserId();
+      if (!user) {
+        toast.error("No user found");
+        return;
+      }
 
-      const filePath = `${userId}/${Date.now()}-${modelFile.name}`;
+      const filePath = `${user.id}/${Date.now()}-${modelFile.name}`;
 
-      const { error, data } = await supabase.storage
+      // 1. Upload to storage
+      const { error: uploadError, data: uploadData } = await supabase.storage
         .from(SUPABASE_STORAGE_BUCKET_MODELS)
         .upload(filePath, modelFile);
 
-      console.log("Upload error:", error);
-      console.log("Upload data:", data);
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        toast.error("Failed to upload to storage");
+        return;
+      }
 
-      if (data) {
-        setShareUrl(`${window.location.href}?id=${data.id}`);
+      // 2. Insert into DB
+      const { error: insertError, data: insertData } = await supabase
+        .from(SUPABASE_TABLE_USER_SCENE)
+        .insert([
+          {
+            user_id: user.id,
+            model_url: uploadData.path,
+          },
+        ])
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error("Insert error:", insertError);
+        toast.error("Failed to insert into DB");
+        return;
+      }
+
+      if (insertData) {
+        setShareUrl(`${window.location.href}?id=${insertData.id}`);
         setIsModalOpen(true);
-        fetchUserAndFiles();
+        fetchUserScenes();
       }
     } catch (error) {
       console.error("Error generating share link:", error);
@@ -55,45 +81,74 @@ export const useShare = () => {
     }
   };
 
-  // Get user id and list their files
-  const fetchUserAndFiles = useCallback(async () => {
-    const userId = await getUserId();
+  const deleteShareLink = async (id: string, url: string) => {
+    const { error } = await supabase
+      .from(SUPABASE_TABLE_USER_SCENE)
+      .delete()
+      .eq("id", id);
 
-    if (userId) {
-      const { data, error } = await supabase.storage
-        .from(SUPABASE_STORAGE_BUCKET_MODELS)
-        .list(userId);
+    if (error) {
+      console.error("Delete error:", error);
+      toast.error("Failed to delete share link");
+      return;
+    }
+    console.log(url, "url");
+    const { error: deleteError } = await supabase.storage
+      .from(SUPABASE_STORAGE_BUCKET_MODELS)
+      .remove([url]);
+
+    if (deleteError) {
+      console.error("Delete error:", deleteError);
+      toast.error("Failed to delete file from storage");
+      return;
+    }
+
+    fetchUserScenes();
+  };
+
+  // Get user id and list their files
+  const fetchUserScenes = useCallback(async () => {
+    if (user) {
+      const { data: userSceneData, error } = await supabase
+        .from(SUPABASE_TABLE_USER_SCENE)
+        .select("*")
+        .eq("user_id", user.id);
 
       if (error) {
         console.error("Fetch error:", error);
         return;
       }
 
-      // Generate signed URLs
-      const urls = await Promise.all(
-        data.map(async (file) => {
-          const { data: urlData } = await supabase.storage
+      // Generate public URLs (getPublicUrl is synchronous)
+      const userScenesData: UserSceneProps[] = userSceneData.map(
+        (userScene) => {
+          const { data: urlData } = supabase.storage
             .from(SUPABASE_STORAGE_BUCKET_MODELS)
-            .getPublicUrl(`${userId}/${file.name}`);
-          return urlData?.publicUrl ?? "";
-        })
+            .getPublicUrl(userScene.model_url);
+          return {
+            ...userScene,
+            model_url: urlData?.publicUrl,
+            model_path: userScene.model_url,
+          };
+        }
       );
-      setModelUrls(urls);
-      setLoadingModelUrls(false);
+      setUserScenes(userScenesData);
+      setLoadingUserScenes(false);
     }
-  }, [getUserId, supabase.storage]);
+  }, [supabase, user]);
 
   useEffect(() => {
-    fetchUserAndFiles();
-  }, [fetchUserAndFiles]);
+    fetchUserScenes();
+  }, [fetchUserScenes]);
 
   return {
     isUploading,
     shareUrl,
     isModalOpen,
     setIsModalOpen,
+    userScenes,
+    loadingUserScenes,
     generateShareLink,
-    modelUrls,
-    loadingModelUrls,
+    deleteShareLink,
   };
 };

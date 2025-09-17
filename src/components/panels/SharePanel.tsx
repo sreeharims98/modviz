@@ -18,8 +18,9 @@ export const SharePanel = () => {
     isModalOpen,
     setIsModalOpen,
     generateShareLink,
-    modelUrls,
-    loadingModelUrls,
+    userScenes,
+    loadingUserScenes,
+    deleteShareLink,
   } = useShare();
 
   const handleCopy = async () => {
@@ -76,19 +77,23 @@ export const SharePanel = () => {
         </DialogContent>
       </Dialog>
 
-      {loadingModelUrls ? (
+      {loadingUserScenes ? (
         <div className="flex justify-center items-center gap-1 mt-4">
           <Loader2 className="w-4 h-4 animate-spin" />
           <span className="text-sm text-muted-foreground">
             Loading your models...
           </span>
         </div>
-      ) : modelUrls.length > 0 ? (
+      ) : userScenes.length > 0 ? (
         <div className="mt-6">
           <h2 className="text-lg font-semibold mb-2">Your Models</h2>
           <ul className="space-y-2">
-            {modelUrls.map((url) => (
-              <ShareList key={url} url={url} />
+            {userScenes.map((userScene) => (
+              <ShareList
+                key={userScene.id}
+                userScene={userScene}
+                deleteShareLink={deleteShareLink}
+              />
             ))}
           </ul>
         </div>

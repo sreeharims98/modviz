@@ -9,12 +9,14 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { toast } from "sonner";
+import { UserSceneProps } from "@/types";
 
 interface ShareListProps {
-  url: string;
+  userScene: UserSceneProps;
+  deleteShareLink: (id: string, url: string) => void;
 }
 
-export const ShareList = ({ url }: ShareListProps) => {
+export const ShareList = ({ userScene, deleteShareLink }: ShareListProps) => {
   const [copied, setCopied] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
@@ -40,27 +42,26 @@ export const ShareList = ({ url }: ShareListProps) => {
     }
   };
 
-  const handleDelete = async () => {
-    // Placeholder delete - implement storage deletion here later
+  const handleDelete = async (id: string, url: string) => {
+    deleteShareLink(id, url);
     setIsDeleteOpen(false);
-    toast.info("Delete action not implemented yet");
   };
 
   return (
     <li
-      key={url}
+      key={userScene.id}
       className="flex items-center justify-between gap-3 border rounded-md p-3 hover:bg-accent hover:text-accent-foreground transition-colors"
     >
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium truncate" title={url}>
-          {getFileNameFromUrl(url)}
+        <p className="text-sm font-medium truncate" title={userScene.model_url}>
+          {getFileNameFromUrl(userScene.model_url)}
         </p>
       </div>
       <div className="flex items-center gap-2">
         <Button
           variant="outline"
           size="icon"
-          onClick={() => handleCopyItem(url)}
+          onClick={() => handleCopyItem(userScene.model_url)}
           className="shrink-0"
         >
           {copied ? (
@@ -85,13 +86,17 @@ export const ShareList = ({ url }: ShareListProps) => {
             <DialogTitle>Delete model?</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Are you sure you want to delete {getFileNameFromUrl(url)}?
+            Are you sure you want to delete{" "}
+            {getFileNameFromUrl(userScene.model_url)}?
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete}>
+            <Button
+              variant="destructive"
+              onClick={() => handleDelete(userScene.id, userScene.model_path)}
+            >
               Delete
             </Button>
           </DialogFooter>
