@@ -20,9 +20,9 @@ export const ShareList = ({ userScene, deleteShareLink }: ShareListProps) => {
   const [copied, setCopied] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-  const handleCopyItem = async (url: string) => {
+  const handleCopyItem = async (id: string) => {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(`${window.location.href}/${id}`);
       setCopied(true);
       toast.success("Link copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
@@ -61,7 +61,7 @@ export const ShareList = ({ userScene, deleteShareLink }: ShareListProps) => {
         <Button
           variant="outline"
           size="icon"
-          onClick={() => handleCopyItem(userScene.model_url)}
+          onClick={() => handleCopyItem(userScene.id)}
           className="shrink-0"
         >
           {copied ? (

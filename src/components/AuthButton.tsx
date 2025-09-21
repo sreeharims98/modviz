@@ -1,3 +1,4 @@
+"use client";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";

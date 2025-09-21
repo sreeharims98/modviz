@@ -4,7 +4,7 @@ import {
 } from "@/constants";
 import { useAppStore } from "@/store/useAppStore";
 import { createClient } from "@/utils/supabase/client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useGetUser } from "./useGetUser";
 import { UserSceneProps } from "@/types";
@@ -68,7 +68,7 @@ export const useShare = () => {
       }
 
       if (insertData) {
-        setShareUrl(`${window.location.href}?id=${insertData.id}`);
+        setShareUrl(`${window.location.href}/${insertData.id}`);
         setIsModalOpen(true);
         fetchUserScenes();
       }
@@ -137,9 +137,33 @@ export const useShare = () => {
     }
   }, [supabase, user]);
 
-  useEffect(() => {
-    fetchUserScenes();
-  }, [fetchUserScenes]);
+  const getUserSceneById = useCallback(
+    async (id: string) => {
+      const { data: userSceneData, error } = await supabase
+        .from(SUPABASE_TABLE_USER_SCENE)
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) {
+        console.error("Fetch error:", error);
+        return;
+      }
+
+      return userSceneData;
+    },
+    [supabase]
+  );
+
+  const getPublicURLbyPath = useCallback(
+    async (path: string) => {
+      const { data: urlData } = await supabase.storage
+        .from(SUPABASE_STORAGE_BUCKET_MODELS)
+        .getPublicUrl(path);
+      return urlData?.publicUrl;
+    },
+    [supabase]
+  );
 
   return {
     isUploading,
@@ -150,5 +174,8 @@ export const useShare = () => {
     loadingUserScenes,
     generateShareLink,
     deleteShareLink,
+    fetchUserScenes,
+    getUserSceneById,
+    getPublicURLbyPath,
   };
 };

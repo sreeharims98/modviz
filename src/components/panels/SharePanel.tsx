@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Check, Copy, Loader2, Share2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useShare } from "@/hooks/useShare";
 import { ShareList } from "../ShareList";
@@ -21,6 +21,7 @@ export const SharePanel = () => {
     userScenes,
     loadingUserScenes,
     deleteShareLink,
+    fetchUserScenes,
   } = useShare();
 
   const handleCopy = async () => {
@@ -34,8 +35,12 @@ export const SharePanel = () => {
     }
   };
 
+  useEffect(() => {
+    fetchUserScenes();
+  }, [fetchUserScenes]);
+
   return (
-    <div className="w-full h-full overflow-y-auto">
+    <div className="w-full h-full overflow-y-auto mt-4">
       <Button
         className="w-full flex items-center gap-2"
         onClick={generateShareLink}
@@ -85,7 +90,7 @@ export const SharePanel = () => {
           </span>
         </div>
       ) : userScenes.length > 0 ? (
-        <div className="mt-6">
+        <div className="mt-4">
           <h2 className="text-lg font-semibold mb-2">Your Models</h2>
           <ul className="space-y-2">
             {userScenes.map((userScene) => (

@@ -1,12 +1,12 @@
 "use client";
-import ModelViewer from "../components/ModelViewer";
+import ModelViewerUploader from "../components/ModelViewerUploader";
 import { Panel } from "@/components/panels/Panel";
 
 export default function Home() {
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex bg-background">
       <div className="flex-1 p-2">
-        <ModelViewer />
+        <ModelViewerUploader />
       </div>
       <Panel />
     </div>

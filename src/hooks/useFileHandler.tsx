@@ -2,6 +2,7 @@ import { RefObject, useRef, useState } from "react";
 import { useModelLoader } from "./useModelLoader";
 import { toast } from "sonner";
 import { AnimationMixer, Group, Scene } from "three";
+import { useAppStore } from "@/store/useAppStore";
 
 export const useFileHandler = ({
   sceneRef,
@@ -10,6 +11,8 @@ export const useFileHandler = ({
   sceneRef: RefObject<Scene | null>;
   mixerRef: RefObject<AnimationMixer | null>;
 }) => {
+  const setModelFile = useAppStore((state) => state.setModelFile);
+
   const [isDragOver, setIsDragOver] = useState(false);
 
   const modelRef = useRef<Group | null>(null);
@@ -30,7 +33,9 @@ export const useFileHandler = ({
     );
 
     if (glbFile) {
-      loadModel(glbFile);
+      const url = URL.createObjectURL(glbFile);
+      setModelFile(glbFile);
+      loadModel(url);
     } else {
       toast.error("Please drop a GLB or GLTF file");
     }
@@ -59,7 +64,8 @@ export const useFileHandler = ({
         file.name.toLowerCase().endsWith(".gltf")
     );
     if (glbFile) {
-      loadModel(glbFile);
+      const url = URL.createObjectURL(glbFile);
+      loadModel(url);
     } else {
       toast.error("Please select a GLB or GLTF file");
     }
