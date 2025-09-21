@@ -10,7 +10,7 @@ export const Panel = () => {
 
   return (
     <div className="w-[300px] flex flex-col p-2 bg-panel border-l border-panel-border">
-      <Tabs defaultValue={TABS.SHARE} className="w-full flex-1">
+      {/* <Tabs defaultValue={TABS.SHARE} className="w-full flex-1">
         <TabsList>
           {Object.values(TABS).map((tab) => (
             <TabsTrigger key={tab} value={tab} disabled={!isModelLoaded}>
@@ -24,10 +24,10 @@ export const Panel = () => {
         <TabsContent value={TABS.SCENE}>
           <ScenePanel />
         </TabsContent>
-        <TabsContent value={TABS.SHARE}>
-          <SharePanel />
-        </TabsContent>
-      </Tabs>
+        <TabsContent value={TABS.SHARE}> */}
+      <SharePanel />
+      {/* </TabsContent>
+      </Tabs> */}
     </div>
   );
 };

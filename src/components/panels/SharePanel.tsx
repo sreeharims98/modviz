@@ -91,7 +91,7 @@ export const SharePanel = () => {
         </div>
       ) : userScenes.length > 0 ? (
         <div className="mt-4">
-          <h2 className="text-lg font-semibold mb-2">Your Models</h2>
+          <h2 className="text-lg font-semibold mb-2">Your shared models</h2>
           <ul className="space-y-2">
             {userScenes.map((userScene) => (
               <ShareList

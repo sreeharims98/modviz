@@ -22,7 +22,7 @@ export const ShareList = ({ userScene, deleteShareLink }: ShareListProps) => {
 
   const handleCopyItem = async (id: string) => {
     try {
-      await navigator.clipboard.writeText(`${window.location.href}/${id}`);
+      await navigator.clipboard.writeText(`${window.location.href}${id}`);
       setCopied(true);
       toast.success("Link copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);

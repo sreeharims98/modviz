@@ -28,6 +28,12 @@ export const useShare = () => {
       return;
     }
 
+    //check if model size is greater than 25mb
+    if (modelFile.size > 25 * 1024 * 1024) {
+      toast.error("Model size is greater than 25mb");
+      return;
+    }
+
     try {
       setIsUploading(true);
 
@@ -68,7 +74,7 @@ export const useShare = () => {
       }
 
       if (insertData) {
-        setShareUrl(`${window.location.href}/${insertData.id}`);
+        setShareUrl(`${window.location.href}${insertData.id}`);
         setIsModalOpen(true);
         fetchUserScenes();
       }

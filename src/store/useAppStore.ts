@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 import {
   AnimationAction,
   AnimationClip,
@@ -47,84 +48,94 @@ interface AppState {
   setSelectedAnimation: (animation: string) => void;
   currentAction: AnimationAction | null;
   setCurrentAction: (action: AnimationAction | null) => void;
+
+  //reset all
+  resetAll: () => void;
 }
 
-export const useAppStore = create<AppState>()((set, get) => ({
-  // Scene
-  modelFile: null,
-  setModelFile: (file) => set({ modelFile: file }),
-  // Loading progress
-  isModelLoaded: false,
-  setIsModelLoaded: (value) => set({ isModelLoaded: value }),
-  loadingProgress: 0,
-  setLoadingProgress: (value) => set({ loadingProgress: value }),
-  isLoading: false,
-  setIsLoading: (value) => set({ isLoading: value }),
+export const useAppStore = create<AppState>()(
+  devtools((set, get, store) => ({
+    // Scene
+    modelFile: null,
+    setModelFile: (file) => set({ modelFile: file }),
+    // Loading progress
+    isModelLoaded: false,
+    setIsModelLoaded: (value) => set({ isModelLoaded: value }),
+    loadingProgress: 0,
+    setLoadingProgress: (value) => set({ loadingProgress: value }),
+    isLoading: false,
+    setIsLoading: (value) => set({ isLoading: value }),
 
-  // Materials
-  materials: [],
-  selectedMaterial: null,
-  materialSettings: DEFAULT_MATERIAL_SETTINGS,
-  selectedMaterialSettings: DEFAULT_MATERIAL_SETTINGS,
-  handleMaterialsFound: (foundMaterials) => {
-    set({ materials: foundMaterials });
-    if (foundMaterials.length > 0) {
-      const firstEditable = foundMaterials.find(
-        (material) =>
-          material instanceof MeshStandardMaterial ||
-          material instanceof MeshPhysicalMaterial
-      );
-      if (firstEditable) {
-        get().handleMaterialSelect(firstEditable);
-      } else {
-        set({ selectedMaterial: foundMaterials[0] });
+    // Materials
+    materials: [],
+    selectedMaterial: null,
+    materialSettings: DEFAULT_MATERIAL_SETTINGS,
+    selectedMaterialSettings: DEFAULT_MATERIAL_SETTINGS,
+    handleMaterialsFound: (foundMaterials) => {
+      set({ materials: foundMaterials });
+      if (foundMaterials.length > 0) {
+        const firstEditable = foundMaterials.find(
+          (material) =>
+            material instanceof MeshStandardMaterial ||
+            material instanceof MeshPhysicalMaterial
+        );
+        if (firstEditable) {
+          get().handleMaterialSelect(firstEditable);
+        } else {
+          set({ selectedMaterial: foundMaterials[0] });
+        }
       }
-    }
-  },
-  handleMaterialSelect: (material) => {
-    set({ selectedMaterial: material });
-    if (
-      material instanceof MeshStandardMaterial ||
-      material instanceof MeshPhysicalMaterial
-    ) {
-      const settings = {
-        color: `#${material.color.getHexString()}`,
-        metalness: material.metalness,
-        roughness: material.roughness,
-        emissive: `#${material.emissive.getHexString()}`,
-        emissiveIntensity: material.emissiveIntensity,
-      };
-      set({
-        materialSettings: settings,
-        selectedMaterialSettings: { ...settings },
-      });
-    }
-  },
-  handleMaterialSettingsChange: (property, value) => {
-    set((state) => ({
-      materialSettings: {
-        ...state.materialSettings,
-        [property]: value,
-      },
-    }));
-  },
-  resetMaterialSettings: () => {
-    set((state) => ({
-      materialSettings: { ...state.selectedMaterialSettings },
-    }));
-  },
+    },
+    handleMaterialSelect: (material) => {
+      set({ selectedMaterial: material });
+      if (
+        material instanceof MeshStandardMaterial ||
+        material instanceof MeshPhysicalMaterial
+      ) {
+        const settings = {
+          color: `#${material.color.getHexString()}`,
+          metalness: material.metalness,
+          roughness: material.roughness,
+          emissive: `#${material.emissive.getHexString()}`,
+          emissiveIntensity: material.emissiveIntensity,
+        };
+        set({
+          materialSettings: settings,
+          selectedMaterialSettings: { ...settings },
+        });
+      }
+    },
+    handleMaterialSettingsChange: (property, value) => {
+      set((state) => ({
+        materialSettings: {
+          ...state.materialSettings,
+          [property]: value,
+        },
+      }));
+    },
+    resetMaterialSettings: () => {
+      set((state) => ({
+        materialSettings: { ...state.selectedMaterialSettings },
+      }));
+    },
 
-  // Lights
-  lightSettings: DEFAULT_LIGHT_SETTINGS,
-  setLightSettings: (value) => set({ lightSettings: value }),
-  resetLightSettings: () =>
-    set({ lightSettings: { ...DEFAULT_LIGHT_SETTINGS } }),
+    // Lights
+    lightSettings: DEFAULT_LIGHT_SETTINGS,
+    setLightSettings: (value) => set({ lightSettings: value }),
+    resetLightSettings: () =>
+      set({ lightSettings: { ...DEFAULT_LIGHT_SETTINGS } }),
 
-  // Animations
-  clips: [],
-  setClips: (clips) => set({ clips: clips }),
-  selectedAnimation: "",
-  setSelectedAnimation: (selectedAnimation) => set({ selectedAnimation }),
-  currentAction: null,
-  setCurrentAction: (action) => set({ currentAction: action }),
-}));
+    // Animations
+    clips: [],
+    setClips: (clips) => set({ clips: clips }),
+    selectedAnimation: "",
+    setSelectedAnimation: (selectedAnimation) => set({ selectedAnimation }),
+    currentAction: null,
+    setCurrentAction: (action) => set({ currentAction: action }),
+
+    //reset all
+    resetAll: () => {
+      set(store.getInitialState());
+    },
+  }))
+);

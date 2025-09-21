@@ -5,10 +5,12 @@ import { useScene } from "@/hooks/useScene";
 import { LoadingOverlay } from "./LoadingOverlay";
 import { useAppStore } from "@/store/useAppStore";
 import { useAnimation } from "@/hooks/useAnimation";
+import { useEffect } from "react";
 
 export default function ModelViewerUploader() {
   const isModelLoaded = useAppStore((state) => state.isModelLoaded);
   const isLoading = useAppStore((state) => state.isLoading);
+  const resetAll = useAppStore((state) => state.resetAll);
 
   //scene
   const { mountRef, sceneRef, textureRef, skyboxRef, mixerRef } = useScene();
@@ -32,6 +34,11 @@ export default function ModelViewerUploader() {
 
   //animation
   useAnimation({ mixerRef });
+
+  //reset all to initial state
+  useEffect(() => {
+    resetAll();
+  }, [resetAll]);
 
   return (
     <div

@@ -65,6 +65,7 @@ export const useFileHandler = ({
     );
     if (glbFile) {
       const url = URL.createObjectURL(glbFile);
+      setModelFile(glbFile);
       loadModel(url);
     } else {
       toast.error("Please select a GLB or GLTF file");
