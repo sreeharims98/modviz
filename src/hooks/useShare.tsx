@@ -114,31 +114,36 @@ export const useShare = () => {
 
   // Get user id and list their files
   const fetchUserScenes = useCallback(async () => {
-    if (user) {
-      const { data: userSceneData, error } = await supabase
-        .from(SUPABASE_TABLE_USER_SCENE)
-        .select("*")
-        .eq("user_id", user.id);
+    try {
+      if (user) {
+        const { data: userSceneData, error } = await supabase
+          .from(SUPABASE_TABLE_USER_SCENE)
+          .select("*")
+          .eq("user_id", user.id);
 
-      if (error) {
-        console.error("Fetch error:", error);
-        return;
-      }
-
-      // Generate public URLs (getPublicUrl is synchronous)
-      const userScenesData: UserSceneProps[] = userSceneData.map(
-        (userScene) => {
-          const { data: urlData } = supabase.storage
-            .from(SUPABASE_STORAGE_BUCKET_MODELS)
-            .getPublicUrl(userScene.model_url);
-          return {
-            ...userScene,
-            model_url: urlData?.publicUrl,
-            model_path: userScene.model_url,
-          };
+        if (error) {
+          console.error("Fetch error:", error);
+          return;
         }
-      );
-      setUserScenes(userScenesData);
+
+        // Generate public URLs (getPublicUrl is synchronous)
+        const userScenesData: UserSceneProps[] = userSceneData.map(
+          (userScene) => {
+            const { data: urlData } = supabase.storage
+              .from(SUPABASE_STORAGE_BUCKET_MODELS)
+              .getPublicUrl(userScene.model_url);
+            return {
+              ...userScene,
+              model_url: urlData?.publicUrl,
+              model_path: userScene.model_url,
+            };
+          }
+        );
+        setUserScenes(userScenesData);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
       setLoadingUserScenes(false);
     }
   }, [supabase, user]);
