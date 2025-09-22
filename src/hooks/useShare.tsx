@@ -38,7 +38,7 @@ export const useShare = () => {
       setIsUploading(true);
 
       if (!user) {
-        toast.error("No user found");
+        toast.error("Sign in to share model.");
         return;
       }
 
